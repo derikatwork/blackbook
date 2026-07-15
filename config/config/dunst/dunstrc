@@ -1,0 +1,56 @@
+# Blackbook dunst notification config (dark BunsenLabs styling)
+
+[global]
+    monitor = 0
+    follow = mouse
+    width = 300
+    height = 120
+    origin = top-right
+    offset = 12x40
+    scale = 0
+    notification_limit = 5
+    progress_bar = true
+    indicate_hidden = yes
+    transparency = 5
+    separator_height = 2
+    padding = 10
+    horizontal_padding = 10
+    frame_width = 1
+    frame_color = "#5d8185"
+    separator_color = frame
+    sort = yes
+    font = Sans 10
+    line_height = 0
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    word_wrap = yes
+    ellipsize = middle
+    ignore_newline = no
+    stack_duplicates = true
+    show_indicators = yes
+    icon_position = left
+    max_icon_size = 48
+    sticky_history = yes
+    history_length = 20
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[urgency_low]
+    background = "#1a1a1a"
+    foreground = "#cccccc"
+    timeout = 5
+
+[urgency_normal]
+    background = "#1a1a1a"
+    foreground = "#ffffff"
+    timeout = 8
+
+[urgency_critical]
+    background = "#3a1a1a"
+    foreground = "#ffffff"
+    frame_color = "#ed2323"
+    timeout = 0

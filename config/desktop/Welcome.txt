@@ -1,0 +1,32 @@
+Welcome to Blackbook!
+=====================
+
+Blackbook is a set-and-forget NixOS system with a lightweight,
+BunsenLabs-style Openbox desktop. It is based on the Nixbook project
+(https://github.com/mkellyxp/nixbook) with the Cinnamon desktop replaced
+by an Openbox window manager, tint2 panel, jgmenu and conky.
+
+Getting around
+--------------
+* Right-click the desktop, click the panel menu button, or press the
+  Super (Windows) key to open the main menu.
+* The bottom panel holds application launchers, the task list, the system
+  tray, a clock and a power/logout button.
+* The list of keyboard shortcuts is always shown on the right of the
+  desktop (conky). A few highlights:
+
+    Super            Main menu
+    Super + t        Terminal
+    Super + w        Web browser
+    Super + f        File manager
+    Super + e        Text editor
+    Alt  + F2        Run a program
+    PrtSc            Screenshot (saved to ~/Pictures)
+
+Updates
+-------
+Blackbook updates itself automatically each week - just reboot when it
+tells you updates are ready. To update immediately, choose
+"System > Update & Reboot" from the menu.
+
+Enjoy your Blackbook!

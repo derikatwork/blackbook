@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Blackbook Openbox root menu (right-click on desktop).
+  jgmenu is the primary menu (Super / panel button); this static menu is the
+  fallback and mirrors the same entries.
+-->
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+
+  <menu id="apps-menu" label="Applications">
+    <item label="Web Browser" icon="firefox">
+      <action name="Execute"><command>firefox</command></action>
+    </item>
+    <item label="File Manager" icon="system-file-manager">
+      <action name="Execute"><command>thunar</command></action>
+    </item>
+    <item label="Terminal" icon="utilities-terminal">
+      <action name="Execute"><command>xfce4-terminal</command></action>
+    </item>
+    <item label="Text Editor" icon="accessories-text-editor">
+      <action name="Execute"><command>geany</command></action>
+    </item>
+    <item label="Image Viewer" icon="multimedia-photo-viewer">
+      <action name="Execute"><command>ristretto</command></action>
+    </item>
+    <item label="Document Viewer" icon="evince">
+      <action name="Execute"><command>evince</command></action>
+    </item>
+    <item label="Software" icon="system-software-install">
+      <action name="Execute"><command>gnome-software</command></action>
+    </item>
+  </menu>
+
+  <menu id="settings-menu" label="Settings">
+    <item label="Openbox Config" icon="preferences-system">
+      <action name="Execute"><command>obconf</command></action>
+    </item>
+    <item label="Appearance (GTK/Icons)" icon="preferences-desktop-theme">
+      <action name="Execute"><command>lxappearance</command></action>
+    </item>
+    <item label="Set Wallpaper" icon="preferences-desktop-wallpaper">
+      <action name="Execute"><command>nitrogen</command></action>
+    </item>
+    <item label="Network" icon="network-wireless">
+      <action name="Execute"><command>nm-connection-editor</command></action>
+    </item>
+    <item label="Volume Control" icon="audio-volume-high">
+      <action name="Execute"><command>pavucontrol</command></action>
+    </item>
+    <item label="Power Manager" icon="battery">
+      <action name="Execute"><command>xfce4-power-manager-settings</command></action>
+    </item>
+    <item label="Printers" icon="printer">
+      <action name="Execute"><command>system-config-printer</command></action>
+    </item>
+    <separator/>
+    <item label="Reconfigure Openbox" icon="view-refresh">
+      <action name="Reconfigure"/>
+    </item>
+  </menu>
+
+  <menu id="system-menu" label="System">
+    <item label="Task Manager" icon="utilities-system-monitor">
+      <action name="Execute"><command>xfce4-taskmanager</command></action>
+    </item>
+    <item label="Update &amp; Reboot" icon="system-software-update">
+      <action name="Execute"><command>xfce4-terminal -e "sh /etc/blackbook/update.sh"</command></action>
+    </item>
+    <item label="Powerwash (Factory Reset)" icon="edit-delete">
+      <action name="Execute"><command>xfce4-terminal -e "sh /etc/blackbook/powerwash.sh"</command></action>
+    </item>
+  </menu>
+
+  <menu id="root-menu" label="Blackbook">
+    <separator label="Blackbook"/>
+    <menu id="apps-menu"/>
+    <item label="Run Program..." icon="system-run">
+      <action name="Execute"><command>gmrun</command></action>
+    </item>
+    <separator/>
+    <menu id="client-list-combined-menu"/>
+    <menu id="settings-menu"/>
+    <menu id="system-menu"/>
+    <separator/>
+    <item label="Lock Screen" icon="system-lock-screen">
+      <action name="Execute"><command>light-locker-command -l</command></action>
+    </item>
+    <item label="Log Out / Shutdown..." icon="system-shutdown">
+      <action name="Execute"><command>blackbook-exit</command></action>
+    </item>
+  </menu>
+
+</openbox_menu>

@@ -1,0 +1,49 @@
+#!/bin/sh
+# Blackbook Openbox autostart
+# ===========================
+# Executed by openbox-session at login. Launches the panel, compositor,
+# wallpaper, notification daemon and system tray applets that make up the
+# BunsenLabs-style desktop.
+
+# Set a wallpaper (restores the last one chosen in nitrogen; falls back to a
+# solid dark colour if none has been set yet).
+if command -v nitrogen >/dev/null 2>&1; then
+    nitrogen --restore || hsetroot -solid "#1a1a1a"
+else
+    hsetroot -solid "#1a1a1a"
+fi
+
+# Compositor - must be started before the panel for correct transparency.
+picom --config "$HOME/.config/picom.conf" &
+
+# Notification daemon
+dunst &
+
+# System beep off, sane key-repeat rate
+xset b off
+xset r rate 250 25
+
+# Alias the Super key to Super+Space so a single Super press opens the menu
+# (see rc.xml keybind), while Super+letter combos still work.
+if command -v xcape >/dev/null 2>&1; then
+    xcape -e 'Super_L=Super_L|space'
+fi
+
+# Panel
+tint2 &
+
+# Conky system-info / cheatsheet on the desktop
+(sleep 1; conky -q -c "$HOME/.config/conky/conky.conf") &
+
+# Power management
+xfce4-power-manager &
+
+# Screen locker on suspend/idle
+light-locker --lock-on-suspend --lock-on-lid &
+
+# System tray applets
+(sleep 2; nm-applet) &
+(sleep 2; volumeicon) &
+
+# Thunar in daemon mode for faster file-manager launches and thumbnails
+thunar --daemon &

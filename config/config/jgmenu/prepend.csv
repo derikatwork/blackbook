@@ -1,0 +1,36 @@
+# Blackbook Main Menu
+# Static entries shown above the auto-generated application list.
+# See: https://jgmenu.github.io/
+
+@search,,4,3,172,22,2,left,top,auto,#000000 0,Type to search…
+
+^sep()
+Web Browser,firefox,firefox
+File Manager,thunar,system-file-manager
+Terminal,xfce4-terminal,utilities-terminal
+Text Editor,geany,accessories-text-editor
+^sep()
+Run Program,gmrun,system-run
+Software,gnome-software,system-software-install
+^sep()
+Settings,^checkout(settings),preferences-desktop
+System,^checkout(system),applications-system
+^sep()
+All Applications,^checkout(apps),applications-other
+^sep()
+Lock Screen,light-locker-command -l,system-lock-screen
+Log Out / Shutdown,blackbook-exit,system-shutdown
+
+Settings,^tag(settings)
+Openbox Config,obconf,preferences-system
+Appearance,lxappearance,preferences-desktop-theme
+Set Wallpaper,nitrogen,preferences-desktop-wallpaper
+Network,nm-connection-editor,network-wireless
+Volume Control,pavucontrol,audio-volume-high
+Power Manager,xfce4-power-manager-settings,battery
+Printers,system-config-printer,printer
+
+System,^tag(system)
+Task Manager,xfce4-taskmanager,utilities-system-monitor
+Update &amp; Reboot,xfce4-terminal -e "sh /etc/blackbook/update.sh",system-software-update
+Powerwash (Factory Reset),xfce4-terminal -e "sh /etc/blackbook/powerwash.sh",edit-delete
