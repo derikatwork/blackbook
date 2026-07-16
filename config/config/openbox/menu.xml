@@ -7,8 +7,8 @@
 <openbox_menu xmlns="http://openbox.org/3.4/menu">
 
   <menu id="apps-menu" label="Applications">
-    <item label="Web Browser" icon="firefox">
-      <action name="Execute"><command>firefox</command></action>
+    <item label="Web Browser" icon="web-browser">
+      <action name="Execute"><command>flatpak run app.zen_browser.zen</command></action>
     </item>
     <item label="File Manager" icon="system-file-manager">
       <action name="Execute"><command>thunar</command></action>

@@ -23,14 +23,9 @@ if [[ "$answer" =~ ^[Yy]$ ]]; then
 
   sudo nixos-rebuild switch
 
-  # Add flathub and some apps
-  flatpak install flathub com.google.Chrome -y
-  flatpak install flathub us.zoom.Zoom -y
-  flatpak install flathub org.libreoffice.LibreOffice -y
+  # Add flathub and the Zen browser
+  flatpak install flathub app.zen_browser.zen -y
   flatpak install flathub org.gtk.Gtk3theme.Adwaita-dark -y
-
-  # Fix for zoom flatpak
-  flatpak override --env=ZYPAK_ZYGOTE_STRATEGY_SPAWN=0 us.zoom.Zoom
 
   reboot
 else

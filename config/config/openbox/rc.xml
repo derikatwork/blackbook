@@ -111,7 +111,7 @@
       <action name="Execute"><command>xfce4-terminal</command></action>
     </keybind>
     <keybind key="W-w">
-      <action name="Execute"><command>firefox</command></action>
+      <action name="Execute"><command>flatpak run app.zen_browser.zen</command></action>
     </keybind>
     <keybind key="W-f">
       <action name="Execute"><command>thunar</command></action>

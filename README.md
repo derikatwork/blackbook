@@ -32,7 +32,7 @@ lightweight stack:
 | File manager         | Thunar                           |
 | Terminal             | xfce4-terminal                   |
 | Text editor          | Geany                            |
-| Web browser          | Firefox (native) + Chrome (Flatpak) |
+| Web browser          | Zen Browser (Flatpak)            |
 | Email                | Thunderbird                      |
 | Login manager        | LightDM (dark GTK greeter)       |
 | Theme                | Adwaita-dark + Papirus-Dark icons |
@@ -65,7 +65,7 @@ lightweight stack:
 
 ```
 base.nix          Main NixOS module: auto-update services, Flatpak + Flathub
-common.nix        Shared base (boot splash, fonts, printing, Firefox/Thunderbird)
+common.nix        Shared base (boot splash, fonts, printing, Thunderbird)
 desktop.nix       The Openbox / BunsenLabs-style desktop definition
 chromebook.nix    Chromebook audio & firmware support (from Nixbook)
 installed.nix     allowUnfree + insecure-package predicate (from Nixbook)
@@ -119,9 +119,9 @@ copies the Openbox dotfiles into your home (backing up `~/.config`), rebuilds,
 and switches you to the Openbox session. **Your files are left in place.**
 Blackbook uses LightDM as the single display manager and force-disables GDM/SDDM,
 so the switch is conflict-free; your old desktop stays selectable at login until
-you choose to remove it. Web + email work immediately (Firefox + Thunderbird),
-and Chrome/Zoom/LibreOffice install themselves on first boot — Flathub is set up
-declaratively, so there is no manual `flatpak remote-add` step.
+you choose to remove it. Email works immediately (Thunderbird), and Zen Browser
+installs itself on first boot — Flathub is set up declaratively, so there is no
+manual `flatpak remote-add` step.
 
 ### On a blank minimal NixOS system (dedicated appliance)
 

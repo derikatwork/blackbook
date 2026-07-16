@@ -5,7 +5,7 @@
 @search,,4,3,172,22,2,left,top,auto,#000000 0,Type to search…
 
 ^sep()
-Web Browser,firefox,firefox
+Web Browser,flatpak run app.zen_browser.zen,web-browser
 File Manager,thunar,system-file-manager
 Terminal,xfce4-terminal,utilities-terminal
 Text Editor,geany,accessories-text-editor

@@ -13,9 +13,9 @@
 #   2. Copy the Openbox desktop dotfiles into your home (with a backup).
 #   3. Rebuild NixOS and switch you to the Openbox session.
 #
-# Chrome/Zoom/LibreOffice (Flatpak) and Firefox/Thunderbird (native) give you
-# web + email out of the box. Flathub is now configured declaratively, so
-# there is no manual remote-add step.
+# Zen Browser (Flatpak) and Thunderbird (native) give you web + email out of
+# the box. Flathub is configured declaratively, so there is no manual
+# remote-add step.
 #
 # Run as your normal, sudo-capable user - NOT as root.
 
@@ -99,9 +99,9 @@ cat <<'EOF'
 
  * Log out, pick the "Openbox" session at the login screen,
    and log back in (or reboot). Openbox is now the default.
- * Web + email: Firefox and Thunderbird are ready now;
-   Chrome, Zoom and LibreOffice install themselves in the
-   background on first boot (Flathub is set up automatically).
+ * Web + email: Thunderbird is ready now; Zen Browser
+   installs itself in the background on first boot
+   (Flathub is set up automatically).
  * The system auto-updates weekly - just reboot when told.
 
  Your previous desktop is still installed and selectable at

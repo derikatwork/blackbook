@@ -52,26 +52,16 @@ let
   installFlatpakAppsScript = pkgs.writeScript "install-flatpak-apps.sh" ''
     set -eu
 
-    if ${pkgs.flatpak}/bin/flatpak list --app | ${pkgs.gnugrep}/bin/grep -q "org.libreoffice.LibreOffice"; then
+    if ${pkgs.flatpak}/bin/flatpak list --app | ${pkgs.gnugrep}/bin/grep -q "app.zen_browser.zen"; then
       echo "Flatpaks already installed"
     else
 
       # Install Flatpak applications
-      ${notifyUsersScript} "Installing Google Chrome" "Please wait while we install Google Chrome..."
-      ${pkgs.flatpak}/bin/flatpak install flathub com.google.Chrome -y
-
-      ${notifyUsersScript} "Installing Zoom" "Please wait while we install Zoom..."
-      ${pkgs.flatpak}/bin/flatpak install flathub us.zoom.Zoom -y
-
-      ${notifyUsersScript} "Installing LibreOffice" "Please wait while we install LibreOffice..."
-      ${pkgs.flatpak}/bin/flatpak install flathub org.libreoffice.LibreOffice -y
-
-      # Fix for zoom flatpak
-      ${pkgs.flatpak}/bin/flatpak override --env=ZYPAK_ZYGOTE_STRATEGY_SPAWN=0 us.zoom.Zoom
+      ${notifyUsersScript} "Installing Zen Browser" "Please wait while we install Zen Browser..."
+      ${pkgs.flatpak}/bin/flatpak install flathub app.zen_browser.zen -y
 
       # Dark GTK theme for flatpak apps, matching the Openbox session
       ${pkgs.flatpak}/bin/flatpak install flathub org.gtk.Gtk3theme.Adwaita-dark -y || true
-      ${pkgs.flatpak}/bin/flatpak override --env=GTK_THEME=Adwaita:dark com.google.Chrome || true
 
       ${notifyUsersScript} "Installing Applications Complete" "Please log out or restart to start using Blackbook and its applications!"
     fi
@@ -93,15 +83,6 @@ in
     flatpak
     xdg-desktop-portal
     xdg-desktop-portal-gtk
-
-    (makeDesktopItem {
-      name = "zoommtg-handler";
-      desktopName = "Zoom URI Handler";
-      exec = "gtk-launch us.zoom.Zoom %u";
-      mimeTypes = [ "x-scheme-handler/zoommtg" ];
-      noDisplay = true;
-      type = "Application";
-    })
   ];
 
   # dconf is needed for gnome-software and the flatpak-update nag fix
@@ -234,9 +215,6 @@ in
 
       ${pkgs.nixos-rebuild}/bin/nixos-rebuild boot --upgrade
 
-      # Fix for zoom flatpak
-      ${pkgs.flatpak}/bin/flatpak override --env=ZYPAK_ZYGOTE_STRATEGY_SPAWN=0 us.zoom.Zoom
-
       ${notifyUsersScript} "System Updates Complete" "Updates are complete!  Simply reboot the computer whenever is convenient to apply updates."
     '';
     serviceConfig = {
@@ -255,8 +233,3 @@ in
     wants = [ "network-online.target" ];
   };
 }
-
-# Notes
-#
-# To reverse zoom flatpak fix:
-#   flatpak override --unset-env=ZYPAK_ZYGOTE_STRATEGY_SPAWN us.zoom.Zoom

@@ -49,9 +49,10 @@
   ];
 
   # Common Packages
+  # The web browser is Zen (installed as a Flatpak by base.nix); it is the
+  # only browser on the system.
   environment.systemPackages = with pkgs; [
     git
-    firefox        # web browser
     thunderbird    # email client
     libnotify
     gawk
