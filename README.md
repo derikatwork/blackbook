@@ -32,6 +32,8 @@ lightweight stack:
 | File manager         | Thunar                           |
 | Terminal             | xfce4-terminal                   |
 | Text editor          | Geany                            |
+| Web browser          | Firefox (native) + Chrome (Flatpak) |
+| Email                | Thunderbird                      |
 | Login manager        | LightDM (dark GTK greeter)       |
 | Theme                | Adwaita-dark + Papirus-Dark icons |
 
@@ -62,13 +64,14 @@ lightweight stack:
 ## Repository layout
 
 ```
-base.nix          Main NixOS module: auto-update services, Flatpak apps
-common.nix        Shared base (boot splash, fonts, printing, packages)
+base.nix          Main NixOS module: auto-update services, Flatpak + Flathub
+common.nix        Shared base (boot splash, fonts, printing, Firefox/Thunderbird)
 desktop.nix       The Openbox / BunsenLabs-style desktop definition
 chromebook.nix    Chromebook audio & firmware support (from Nixbook)
 installed.nix     allowUnfree + insecure-package predicate (from Nixbook)
 channel.sh        Pins the NixOS channel and prunes old generations
-install.sh        One-shot converter: turns a NixOS install into a Blackbook
+install-desktop.sh Non-destructive: switch an existing graphical NixOS to Blackbook
+install.sh        Appliance converter: turns a blank minimal NixOS into a Blackbook
 update.sh         Manual "update & reboot"
 repair.sh         Escape hatch for broken Flatpak/rebuilds
 powerwash.sh      Factory reset (wipe user data, reinstall apps)
@@ -87,26 +90,51 @@ config/desktop/    Files copied to ~/Desktop (Welcome.txt)
 
 The desktop configuration files live in `config/config` and are copied both
 to `/etc/skel` (for new users, via `base.nix`) and to the current user's home
-directory (via `install.sh` / `powerwash.sh`), exactly as Nixbook does.
+directory (via `install-desktop.sh`, `install.sh` or `powerwash.sh`).
 
 ---
 
 ## Installation
 
-Blackbook is applied on top of an existing NixOS installation (typically the
-graphical installer, same as Nixbook). On the target machine:
+There are two installers depending on your starting point. Both just need the
+repo cloned to `/etc/blackbook` first:
 
 ```sh
-sudo git clone https://github.com/derikatwork/blackbook.git /etc/blackbook
+nix-shell -p git --run \
+  'sudo git clone https://github.com/derikatwork/blackbook.git /etc/blackbook'
+```
+
+### On an existing graphical NixOS system (recommended)
+
+If you already have a working NixOS desktop (GNOME, Plasma, etc.) and just want
+to switch it to Blackbook's Openbox desktop, run the **non-destructive**
+installer as your normal user:
+
+```sh
+sh /etc/blackbook/install-desktop.sh
+```
+
+It imports `base.nix` into `/etc/nixos/configuration.nix` (backing it up first),
+copies the Openbox dotfiles into your home (backing up `~/.config`), rebuilds,
+and switches you to the Openbox session. **Your files are left in place.**
+Blackbook uses LightDM as the single display manager and force-disables GDM/SDDM,
+so the switch is conflict-free; your old desktop stays selectable at login until
+you choose to remove it. Web + email work immediately (Firefox + Thunderbird),
+and Chrome/Zoom/LibreOffice install themselves on first boot — Flathub is set up
+declaratively, so there is no manual `flatpak remote-add` step.
+
+### On a blank minimal NixOS system (dedicated appliance)
+
+To convert a fresh minimal install into a dedicated Blackbook — the Nixbook
+"powerwash the home directory and take over the machine" approach — run:
+
+```sh
 sh /etc/blackbook/install.sh
 ```
 
-The installer will:
-
-1. Set up the home directory skeleton and copy the desktop config.
-2. Insert `/etc/blackbook/base.nix` into `/etc/nixos/configuration.nix`.
-3. Add the Flathub remote and rebuild the system.
-4. Install Chrome, Zoom and LibreOffice as Flatpaks and reboot.
+This one **wipes the home directory** and rebuilds it from the Blackbook
+skeleton, inserts `base.nix`, and installs the Flatpak apps. Only use it on a
+machine you intend to hand over as an appliance.
 
 To enable automatic login (recommended for single-user machines), add to
 `/etc/nixos/configuration.nix`:

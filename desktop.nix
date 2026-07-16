@@ -64,6 +64,13 @@ in
   };
   services.displayManager.defaultSession = lib.mkDefault "none+openbox";
 
+  # Blackbook uses LightDM as its single display manager. Force off any other
+  # display manager that an existing install may have enabled (e.g. GDM from a
+  # GNOME install, SDDM from Plasma) so switching to the Openbox session is
+  # conflict-free and there is exactly one greeter.
+  services.displayManager.gdm.enable = lib.mkForce false;
+  services.displayManager.sddm.enable = lib.mkForce false;
+
   # Audio via PipeWire (also required by chromebook.nix audio fixes)
   security.rtkit.enable = true;
   services.pipewire = {

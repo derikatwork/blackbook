@@ -124,6 +124,32 @@ in
 
   services.flatpak.enable = true;
 
+  # Declaratively ensure the Flathub remote is configured system-wide.
+  # (The stock services.flatpak module does not add remotes, so this oneshot
+  # takes the place of the manual `flatpak remote-add` the installer used to
+  # run - meaning a fresh or reinstalled machine sets it up by itself.)
+  systemd.services."add-flathub-remote" = {
+    script = ''
+      set -eu
+      ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub \
+        https://dl.flathub.org/repo/flathub.flatpakrepo
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "root";
+      Restart = "on-failure";
+      RestartSec = "30s";
+    };
+    after = [
+      "network-online.target"
+      "flatpak-system-helper.service"
+    ];
+    wants = [ "network-online.target" ];
+    before = [ "install-flatpak-apps.service" ];
+    wantedBy = [ "multi-user.target" ];
+  };
+
   # Install Flatpak Applications Service
   systemd.services."install-flatpak-apps" = {
     script = ''
@@ -140,8 +166,12 @@ in
     after = [
       "network-online.target"
       "flatpak-system-helper.service"
+      "add-flathub-remote.service"
     ];
-    wants = [ "network-online.target" ];
+    wants = [
+      "network-online.target"
+      "add-flathub-remote.service"
+    ];
     wantedBy = [ "multi-user.target" ];
   };
 

@@ -51,7 +51,8 @@
   # Common Packages
   environment.systemPackages = with pkgs; [
     git
-    firefox
+    firefox        # web browser
+    thunderbird    # email client
     libnotify
     gawk
     sudo
