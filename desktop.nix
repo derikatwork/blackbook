@@ -135,7 +135,7 @@ in
     nitrogen
     hsetroot
     xcape
-    light-locker
+    lightlocker # provides the light-locker / light-locker-command binaries
     yad
 
     # Applications (the BunsenLabs core set)
