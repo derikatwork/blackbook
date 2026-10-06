@@ -1,0 +1,37 @@
+# Programs labwc starts when you log in. labwc runs this file with `sh`;
+# a line ending in "&" starts its program in the background.
+# Installed as /etc/xdg/labwc/autostart (modules/desktop.nix fills in @polkitAgent@).
+#
+# labwc 0.9 already sends WAYLAND_DISPLAY and friends to D-Bus and the
+# systemd user manager by itself, so that step is not repeated here.
+
+# Create ~/Downloads, ~/Documents and ~/Pictures if they are missing.
+xdg-user-dirs-update
+
+# Notifications. Started first so early messages use our settings.
+start-mako &
+
+# Desktop background: one solid color.
+swaybg --color '#3b5b74' &
+
+# The panel at the bottom of the screen.
+waybar &
+
+# Tray icons for Wi-Fi and Bluetooth.
+nm-applet --indicator &
+blueman-applet &
+
+# Asks for your password when an app needs administrator rights.
+@polkitAgent@ &
+
+# Shows earlyoom's "memory is low, closed a program" messages. NixOS would
+# normally start this from graphical-session.target, which labwc does not use.
+systemctl --user start systembus-notify.service &
+
+# Lock after 5 minutes idle, turn the screen off after 6, and lock before
+# the laptop sleeps (for example when you close the lid).
+swayidle -w \
+  timeout 300 'lock-screen' \
+  timeout 360 'wlopm --off "*"' resume 'wlopm --on "*"' \
+  before-sleep 'lock-screen' \
+  lock 'lock-screen' &

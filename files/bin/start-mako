@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Start the mako notification daemon. Run by the labwc autostart, and by
+# D-Bus if a notification arrives before that (see modules/desktop.nix).
+# mako only looks for its config in your home folder, so pass the system one
+# (/etc/xdg/mako/config) unless you have made your own.
+# @mako@ is replaced with mako's full path when the system is built.
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [ -e "$config_home/mako/config" ] || [ -e "$HOME/.mako/config" ]; then
+  exec @mako@ "$@"
+fi
+exec @mako@ --config /etc/xdg/mako/config "$@"

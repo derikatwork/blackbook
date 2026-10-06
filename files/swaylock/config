@@ -1,0 +1,11 @@
+# Lock screen settings. Installed as /etc/xdg/swaylock/config.
+# swaylock does not look in /etc/xdg by itself; the `lock-screen` helper
+# passes this file unless you have your own ~/.config/swaylock/config.
+# Type your password and press Enter to unlock. See `man swaylock`.
+
+color=3b5b74
+font=Noto Sans
+indicator-radius=90
+indicator-thickness=10
+show-failed-attempts
+ignore-empty-password

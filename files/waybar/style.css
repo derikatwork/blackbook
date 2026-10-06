@@ -1,0 +1,74 @@
+/* Look of the panel. Installed as /etc/xdg/waybar/style.css. */
+
+* {
+  font-family: "Noto Sans", "Noto Color Emoji", sans-serif;
+  font-size: 15px;
+  min-height: 0;
+}
+
+window#waybar {
+  background-color: rgba(246, 245, 244, 0.95);
+  color: #241f31;
+  border-top: 1px solid #c0bfbc;
+}
+
+tooltip {
+  background-color: #ffffff;
+  border: 1px solid #c0bfbc;
+  border-radius: 6px;
+}
+
+tooltip label {
+  color: #241f31;
+}
+
+#custom-launcher,
+#custom-power {
+  font-size: 18px;
+  padding: 0 12px;
+}
+
+#custom-launcher:hover,
+#custom-power:hover {
+  background-color: #deddda;
+  border-radius: 6px;
+}
+
+#taskbar button {
+  color: #241f31;
+  padding: 0 8px;
+  margin: 3px 2px;
+  border-radius: 6px;
+}
+
+#taskbar button.active {
+  background-color: #d0e1f5;
+}
+
+#taskbar button:hover {
+  background-color: #deddda;
+}
+
+#tray,
+#bluetooth,
+#network,
+#wireplumber,
+#backlight,
+#battery,
+#clock {
+  padding: 0 8px;
+}
+
+#battery.warning:not(.charging) {
+  color: #c64600;
+}
+
+#battery.critical:not(.charging) {
+  color: #ffffff;
+  background-color: #c01c28;
+  border-radius: 6px;
+}
+
+#wireplumber.muted {
+  color: #77767b;
+}
