@@ -1,0 +1,20 @@
+## System-wide nano settings (/etc/nanorc).
+## Your own ~/.config/nano/nanorc is read after this one and can change anything.
+## Syntax highlighting is switched on separately (programs.nano.syntaxHighlight).
+
+# Show line numbers on the left.
+set linenumbers
+
+# Click to place the cursor, scroll with the touchpad.
+set mouse
+
+# Show the cursor position in the status bar.
+set constantshow
+
+# Wrap long lines on screen (the file itself is not changed).
+set softwrap
+
+# New lines keep the indentation of the line above.
+set autoindent
+
+set tabsize 4

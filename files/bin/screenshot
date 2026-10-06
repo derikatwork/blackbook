@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Take a screenshot, save it in ~/Pictures/Screenshots, and copy it to the
+# clipboard.
+#   screenshot full     the whole screen (Ctrl + Overview)
+#   screenshot region   drag to pick an area; Esc cancels (Search + Shift + S)
+set -euo pipefail
+
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+file="$dir/Screenshot-$(date +%Y-%m-%d-%H%M%S).png"
+
+case "${1:-full}" in
+  full)
+    grim "$file"
+    ;;
+  region)
+    area=$(slurp) || exit 0
+    grim -g "$area" "$file"
+    ;;
+  *)
+    echo "usage: screenshot [full|region]" >&2
+    exit 2
+    ;;
+esac
+
+wl-copy --type image/png < "$file"
+notify-send --app-name=Screenshot --icon="$file" "Screenshot saved" "Pictures/Screenshots/${file##*/} (also copied)"

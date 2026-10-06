@@ -1,0 +1,12 @@
+# Environment variables for the labwc session (one NAME=value per line).
+# Installed as /etc/xdg/labwc/environment. See `man labwc-config`.
+
+# US keyboard layout.
+XKB_DEFAULT_LAYOUT=us
+
+# Mouse pointer theme and size.
+XCURSOR_THEME=Adwaita
+XCURSOR_SIZE=24
+
+# Tell programs this is a Wayland session.
+XDG_SESSION_TYPE=wayland

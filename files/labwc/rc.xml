@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  labwc settings: keyboard shortcuts, touchpad, window titles.
+  Installed as /etc/xdg/labwc/rc.xml. To change it for yourself only, copy it
+  to ~/.config/labwc/rc.xml (labwc then reads only your copy) and run
+  `labwc -r` (reconfigure). All options: `man labwc-config`, `man labwc-actions`.
+
+  Key names: "W" is Super (the Search key), "A" is Alt, "C" is Ctrl,
+  "S" is Shift. Run `wev` to see what a key is called.
+  The top-row keys are remapped by keyd first (files/keyd/chromebook.conf).
+-->
+<labwc_config>
+
+  <theme>
+    <cornerRadius>8</cornerRadius>
+    <font place="ActiveWindow"><name>Noto Sans</name><size>11</size><weight>bold</weight></font>
+    <font place="InactiveWindow"><name>Noto Sans</name><size>11</size></font>
+    <font place="MenuItem"><name>Noto Sans</name><size>12</size></font>
+    <font place="OnScreenDisplay"><name>Noto Sans</name><size>12</size></font>
+  </theme>
+
+  <!-- Because keybinds are listed here, labwc's built-in defaults are NOT
+       loaded; everything you can press is in this list. -->
+  <keyboard>
+
+    <!-- Launcher: tap Search on its own, or Search+Space, or the Overview key. -->
+    <keybind key="Super_L" onRelease="yes">
+      <action name="Execute" command="fuzzel"/>
+    </keybind>
+    <keybind key="W-space">
+      <action name="Execute" command="fuzzel"/>
+    </keybind>
+    <keybind key="XF86LaunchA">
+      <action name="Execute" command="fuzzel"/>
+    </keybind>
+
+    <!-- Apps -->
+    <keybind key="W-Return">
+      <action name="Execute" command="foot"/>
+    </keybind>
+    <keybind key="C-A-t">
+      <action name="Execute" command="foot"/>
+    </keybind>
+    <keybind key="W-b">
+      <action name="Execute" command="firefox"/>
+    </keybind>
+    <keybind key="W-m">
+      <action name="Execute" command="thunderbird"/>
+    </keybind>
+    <keybind key="W-e">
+      <action name="Execute" command="thunar"/>
+    </keybind>
+    <keybind key="W-l">
+      <action name="Execute" command="lock-screen"/>
+    </keybind>
+
+    <!-- Windows -->
+    <keybind key="A-bracketleft">
+      <action name="SnapToEdge" direction="left"/>
+    </keybind>
+    <keybind key="A-bracketright">
+      <action name="SnapToEdge" direction="right"/>
+    </keybind>
+    <keybind key="A-equal">
+      <action name="ToggleMaximize"/>
+    </keybind>
+    <keybind key="A-Tab">
+      <action name="NextWindow"/>
+    </keybind>
+    <keybind key="A-S-Tab">
+      <action name="PreviousWindow"/>
+    </keybind>
+    <keybind key="W-q">
+      <action name="Close"/>
+    </keybind>
+    <keybind key="A-F4">
+      <action name="Close"/>
+    </keybind>
+    <!-- The Fullscreen key sends F11 (see keyd config). -->
+    <keybind key="F11">
+      <action name="ToggleFullscreen"/>
+    </keybind>
+
+    <!-- Screenshots, saved to ~/Pictures/Screenshots and copied. -->
+    <keybind key="W-S-s">
+      <action name="Execute" command="screenshot region"/>
+    </keybind>
+    <!-- Ctrl+Overview sends Print (see keyd config). -->
+    <keybind key="Print">
+      <action name="Execute" command="screenshot full"/>
+    </keybind>
+
+    <!-- Brightness (never all the way to black) and volume (max 100%). -->
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute" command="brightnessctl set 5%+"/>
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute" command="brightnessctl --min-value=1 set 5%-"/>
+    </keybind>
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute" command="wpctl set-volume --limit 1.0 @DEFAULT_AUDIO_SINK@ 5%+"/>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute" command="wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"/>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute" command="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"/>
+    </keybind>
+
+  </keyboard>
+
+  <!-- Touchpad: tap to click, natural (ChromeOS-style) scrolling, and
+       ignore the touchpad while typing. -->
+  <libinput>
+    <device category="touchpad">
+      <tap>yes</tap>
+      <naturalScroll>yes</naturalScroll>
+      <disableWhileTyping>yes</disableWhileTyping>
+    </device>
+  </libinput>
+
+</labwc_config>

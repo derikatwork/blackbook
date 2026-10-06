@@ -1,0 +1,108 @@
+// The panel at the bottom of the screen (like the ChromeOS shelf).
+// Installed as /etc/xdg/waybar/config.jsonc. To change it for yourself, copy
+// it and style.css to ~/.config/waybar/. All options: `man waybar`.
+{
+  "layer": "top",
+  "position": "bottom",
+  "height": 36,
+  "spacing": 4,
+
+  "modules-left": ["custom/launcher", "wlr/taskbar"],
+  "modules-right": [
+    "tray",
+    "bluetooth",
+    "network",
+    "wireplumber",
+    "backlight",
+    "battery",
+    "clock",
+    "custom/power"
+  ],
+
+  // Opens the app launcher (same as tapping the Search key).
+  "custom/launcher": {
+    "format": "◉",
+    "tooltip": false,
+    "on-click": "fuzzel"
+  },
+
+  // Open windows. Click to switch, middle-click to close.
+  "wlr/taskbar": {
+    "format": "{icon} {title:.24}",
+    "icon-size": 20,
+    "icon-theme": "Adwaita",
+    "tooltip-format": "{title}",
+    "on-click": "activate",
+    "on-click-middle": "close"
+  },
+
+  // Tray icons from nm-applet (Wi-Fi) and blueman-applet (Bluetooth).
+  "tray": {
+    "icon-size": 20,
+    "spacing": 8
+  },
+
+  "bluetooth": {
+    "format": "ᛒ",
+    "format-off": "ᛒ off",
+    "format-disabled": "ᛒ off",
+    "format-connected": "ᛒ {num_connections}",
+    "tooltip-format": "Bluetooth: {status}",
+    "tooltip-format-connected": "{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}",
+    "on-click": "blueman-manager"
+  },
+
+  "network": {
+    "format-wifi": "Wi-Fi {signalStrength}%",
+    "format-ethernet": "Wired",
+    "format-linked": "No internet",
+    "format-disconnected": "Offline",
+    "tooltip-format-wifi": "{essid}",
+    "tooltip-format-disconnected": "Not connected",
+    "on-click": "nm-connection-editor"
+  },
+
+  // Scroll to change volume (stops at 100%), click for the sound settings.
+  "wireplumber": {
+    "format": "🔊 {volume}%",
+    "format-muted": "🔇",
+    "scroll-step": 5,
+    "max-volume": 100,
+    "on-click": "pavucontrol"
+  },
+
+  // Scroll to change screen brightness.
+  "backlight": {
+    "format": "☀ {percent}%",
+    "on-scroll-up": "brightnessctl set 5%+",
+    "on-scroll-down": "brightnessctl --min-value=1 set 5%-"
+  },
+
+  "battery": {
+    "format": "🔋 {capacity}%",
+    "format-charging": "⚡ {capacity}%",
+    "format-plugged": "🔌 {capacity}%",
+    "tooltip-format": "{timeTo}",
+    "states": {
+      "warning": 20,
+      "critical": 10
+    }
+  },
+
+  // Hover to see a calendar.
+  "clock": {
+    "format": "{:%a %b %d  %I:%M %p}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month"
+    }
+  },
+
+  // Lock, Suspend, Log out, Reboot, Shut down.
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": false,
+    "on-click": "power-menu"
+  }
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Start the mako notification daemon.
+# mako only looks for its config in your home folder, so pass the system one
+# (/etc/xdg/mako/config) unless you have made your own.
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [ -e "$config_home/mako/config" ] || [ -e "$HOME/.mako/config" ]; then
+  exec mako "$@"
+fi
+exec mako --config /etc/xdg/mako/config "$@"

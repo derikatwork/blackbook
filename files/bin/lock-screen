@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Lock the screen with swaylock.
+# swaylock only looks for its config in your home folder, so pass the system
+# one (/etc/xdg/swaylock/config) unless you have made your own.
+
+config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+if [ -e "$config_home/swaylock/config" ] || [ -e "$HOME/.swaylock/config" ]; then
+  exec swaylock --daemonize "$@"
+fi
+exec swaylock --daemonize --config /etc/xdg/swaylock/config "$@"
