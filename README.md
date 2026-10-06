@@ -400,9 +400,14 @@ Every update keeps the previous version ("generation"). To go back:
 
 - **If the desktop still works:** run `sysrollback`.
 - **If the laptop doesn't start properly:** restart it, and while the boot menu
-  shows (2 seconds), press **↓** to stop the countdown. Pick an older entry and
-  press Enter. Once you're back, run `sysrollback` to make that version the
-  default again. The menu keeps the 3 newest versions.
+  shows (2 seconds), press **↓** to stop the countdown. Pick the **second**
+  entry (the version just before the newest) and press Enter. Once you're
+  back, run `sysrollback` to make that version the default again.
+
+  `sysrollback` always goes back exactly one version from the newest. The
+  menu keeps the 3 newest versions. If you booted an even older one and want
+  to keep it, run `sudo /run/current-system/bin/switch-to-configuration boot`
+  instead; that makes the version you are running the default.
 
 ### Display size
 
@@ -517,10 +522,24 @@ scripts/install.sh            Run from the NixOS installer (section 7)
 docs/                         Post-install checklist and troubleshooting
 ```
 
-Config files in `files/` are installed to `/etc/xdg/...`. To change one just
-for yourself, copy it to the same place under `~/.config/` and edit it there;
-your copy wins. To change it for the system, edit it in this repo and run
-`sysupdate`.
+The configs for labwc, Waybar, fuzzel, foot, mako, swaylock and GTK are
+installed to `/etc/xdg/<app>/`. To change one just for yourself, copy the
+**installed** file (not the one in `files/`, which may contain placeholders
+that are filled in during the build) and edit your copy; your copy wins. For
+example:
+
+```
+mkdir -p ~/.config/waybar
+cp /etc/xdg/waybar/config.jsonc /etc/xdg/waybar/style.css ~/.config/waybar/
+chmod u+w ~/.config/waybar/*
+```
+
+Note that labwc then uses only your copy of that one file (for example
+`~/.config/labwc/rc.xml`), not a mix. nano's personal settings go in
+`~/.config/nano/nanorc`. The keyboard map (`files/keyd/chromebook.conf`) and
+the helper commands (`files/bin/`) can only be changed in this repo: edit
+them and run `sysupdate`. The same goes for changing any config for the whole
+system.
 
 ### Why some things are set up the way they are
 
@@ -529,9 +548,12 @@ your copy wins. To change it for the system, edit it in this repo and run
   (`linuxPackages_latest`, 7.2.9 when this was written). Like everything else,
   it comes ready-built from cache.nixos.org; nothing big is compiled on the
   laptop.
-- **1 GiB boot partition, 3 boot entries:** each entry stores a kernel on the
-  boot partition. Too small a partition has broken installs on other Stoney
-  Ridge Chromebooks.
+- **1 GiB boot partition, 3 boot entries:** each entry stores a kernel and
+  initrd (about 75 MB together) on the boot partition. Too small a partition
+  has broken installs on other Stoney Ridge Chromebooks.
+- **Graphics driver loaded early:** amdgpu is loaded in the initrd, so the
+  desktop never starts on the firmware's temporary framebuffer and then loses
+  its screen when amdgpu takes over.
 - **No disk encryption tied to the security chip:** the Chromebook's chip
   isn't a full TPM 2.0 ([Known Issues](https://docs.mrchromebox.tech/docs/known-issues.html)).
 - **Swap:** compressed swap in RAM (zram, half of the 4 GB), with

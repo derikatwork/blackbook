@@ -9,6 +9,14 @@
   # 3D and video acceleration (Mesa radeonsi + VA-API for the Radeon R4).
   hardware.graphics.enable = true;
 
+  # Load the GPU driver (amdgpu) early, in the initrd. Otherwise the desktop
+  # can start on the firmware's basic framebuffer a moment before amdgpu
+  # takes over the screen, and the desktop then loses its display (black
+  # screen, or the login prompt instead of auto-login). This makes the
+  # initrd about 40 MB bigger (amdgpu's firmware), which the 1 GiB boot
+  # partition has room for.
+  hardware.amdgpu.initrd.enable = true;
+
   # ---- Power --------------------------------------------------------------
   # TLP with its default settings. power-profiles-daemon would conflict with
   # it, and on this pre-Zen AMD chip it has no CPU driver (amd-pstate needs

@@ -101,8 +101,8 @@ info "Checking the internet connection..."
 curl --silent --fail --head --max-time 20 https://cache.nixos.org/nix-cache-info >/dev/null ||
   die "Cannot reach cache.nixos.org. Connect to Wi-Fi first with: nmtui"
 
-DISK="$(readlink -f -- "$1")"
-[ -b "$DISK" ] || die "$1 is not a disk. Check the name with: lsblk"
+DISK="$(readlink -f -- "$1")" || die "$1 does not exist. Check the name with: lsblk -o NAME,SIZE,MODEL,TRAN,RM"
+[ -b "$DISK" ] || die "$1 is not a disk. Check the name with: lsblk -o NAME,SIZE,MODEL,TRAN,RM"
 [ "$(lsblk -dno TYPE "$DISK")" = "disk" ] ||
   die "$DISK is a partition, not a whole disk. Use the disk itself, for example /dev/mmcblk0 (not /dev/mmcblk0p1)."
 

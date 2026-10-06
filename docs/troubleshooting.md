@@ -127,8 +127,10 @@ password), or boot an older entry from the boot menu (README section 9).
    send.
 3. Apply it with `sysupdate` (after pushing) or
    `nixos-rebuild switch --sudo --flake ~/nixos-config#liara`.
-4. To see what the desktop receives after keyd, run `wev` and press the key.
-   labwc's shortcuts are in `files/labwc/rc.xml`.
+4. To see what keyd sends, run `sudo keyd monitor` with keyd running (lines
+   from `keyd virtual keyboard`). `wev` shows what apps receive, but not keys
+   that are desktop shortcuts (Fullscreen, Overview, brightness, volume):
+   labwc uses those itself. labwc's shortcuts are in `files/labwc/rc.xml`.
 
 If tapping Search doesn't open the launcher, use **Search+Space** or the
 **Overview** key; both always work.

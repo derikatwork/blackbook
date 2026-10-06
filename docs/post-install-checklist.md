@@ -72,13 +72,18 @@ First check what the keys send, then that the shortcuts work.
   sudo systemctl start keyd
   ```
 
-- [ ] **Remapped keys (what the desktop gets).** Run `wev` and press keys
-  inside its window. The top-row keys should show as `XF86Back`,
-  `XF86Forward`, `XF86Reload`, `F11`, `XF86LaunchA`, `XF86MonBrightnessDown`,
-  `XF86MonBrightnessUp`, `XF86AudioMute`, `XF86AudioLowerVolume`,
-  `XF86AudioRaiseVolume`, and Search + top-row key as `F1` … `F10`. Close it
-  with **Search+Q**. (`sudo keyd monitor` with keyd running shows the same
-  remapped keys, from `keyd virtual keyboard`.)
+- [ ] **Remapped keys (what keyd sends on).** With keyd running, run
+  `sudo keyd monitor` again and watch the lines from `keyd virtual keyboard`.
+  The top row, left to right, should show `back`, `forward`, `refresh`,
+  `f11`, `scale`, `brightnessdown`, `brightnessup`, `mute`, `volumedown`,
+  `volumeup`. With Search held, they should show `f1` … `f10`. **Ctrl+C**
+  stops it.
+
+- [ ] **What apps receive.** Run `wev` and press keys inside its window.
+  Back, Forward and Refresh show as `XF86Back`, `XF86Forward`, `XF86Reload`,
+  and Search + top-row key as `F1` … `F10`. Fullscreen, Overview, brightness,
+  mute and volume are desktop shortcuts, so they act straight away and `wev`
+  shows nothing for them; that is expected. Close `wev` with **Search+Q**.
 
 Then try each one (see the table in README section 9):
 

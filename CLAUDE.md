@@ -379,4 +379,5 @@ These were answered and the plan was approved; don't ask again unless something 
 - Alt + the Fullscreen key sends Alt+F4 (keyd `[alt]` layer), because the keyboard has no real F4 key.
 - Not running (removed defaults, not additions): speech-dispatcher service, ModemManager, NixOS's default font set.
 - `install.sh` uses `nixos-install --no-channel-copy` (the flake doesn't use the installer's channel).
+- `hardware.amdgpu.initrd.enable = true` (modules/hardware.nix): without early KMS, greetd can start labwc on simpledrm before amdgpu replaces it, and wlroots loses its backend. Initrd grows from ~27 MB to ~62 MB; only the initrd is rebuilt locally.
 - `flake.lock` was first written in a sandbox that could reach GitHub only over git, so it was locked through a git fetch of the same commit and rewritten as a normal `github:` entry. The NAR hash matches a `git archive` of that commit (what GitHub serves). `nix flake update` replaces it normally.
