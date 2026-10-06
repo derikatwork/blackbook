@@ -146,15 +146,23 @@ Stoney Ridge Chromebooks
 5. The script shows a menu. At the top, check that it shows **LIARA** and that
    firmware write protect is **disabled**. If write protect is still enabled,
    the battery is still connected; go back to step 4 of section 4.
-6. Choose **2) Install/Update UEFI (Full ROM) Firmware** and answer the
-   warnings.
-7. When it asks **"Create backup now? [Y/n]"**, press **Y**, insert **USB stick
-   #1**, and pick it from the list. When it says the backup is complete, remove
-   the stick and press **Enter**. Keep this stick: the file on it
-   (`BACKUP-LIARA-...rom`) is the only way to put ChromeOS firmware back
-   exactly as it was.
-8. Wait for the script to finish flashing and return to the menu.
-9. Press **P** and Enter to **power off**.
+6. Type **2** and press Enter (**Install/Update UEFI (Full ROM) Firmware**).
+   Answer the questions exactly like this (any other answer cancels and
+   returns to the menu):
+   1. "Do you wish to continue? [y/N]": type **y**, Enter.
+   2. A notice about a USB-C debug cable and "Type I ACCEPT": type
+      **I ACCEPT** (capital letters, one space), Enter. You don't need the
+      cable.
+   3. A note that ChromeOS will no longer boot, "Press Y to continue": type
+      **Y**, Enter.
+7. When it asks **"Create backup now? [Y/n]"**, press **Y** and Enter, insert
+   **USB stick #1**, and pick it from the list. When it says the backup is
+   complete, remove the stick and press **Enter**. Keep this stick: the file
+   on it (`stock-firmware-LIARA-<date>.rom`) is the only way to put the
+   ChromeOS firmware back exactly as it was.
+8. Wait for the script to download and flash the firmware. When it says it
+   finished, press **Enter** to return to the menu.
+9. Type **P** and press Enter to **power off**.
 10. Unplug the charger. Open the bottom cover again, **reconnect the battery**
     (push the connector straight into its socket), and screw the cover back on
     fully.
@@ -273,8 +281,8 @@ Do this on your main computer.
 
 1. The boot menu shows for 2 seconds, then the desktop starts by itself. You
    aren't asked for a password at startup.
-2. You should be on Wi-Fi already: the install copied the network you used in
-   the installer. If not, click the Wi-Fi icon at the bottom right.
+2. Connect to Wi-Fi: click the Wi-Fi icon at the bottom right of the panel
+   and pick your network. The password is saved for next time.
 3. Open a terminal (**Ctrl+Alt+T**) and connect Tailscale:
 
    ```
@@ -310,7 +318,7 @@ key.
 | **Alt+Tab** / **Alt+Shift+Tab** | Switch windows |
 | **Alt+[** / **Alt+]** | Snap window to the left / right half |
 | **Alt+=** | Maximize / restore window |
-| **Search+Q** or **Alt+F4** | Close window |
+| **Search+Q** or **Alt+Fullscreen** (= Alt+F4) | Close window |
 | **Fullscreen** key | Make the window fullscreen (press again to leave) |
 | **Back**, **Forward**, **Refresh** keys | Back, forward, reload (in Firefox) |
 | **Brightness** keys | Screen brightness |

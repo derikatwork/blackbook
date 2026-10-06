@@ -1,6 +1,7 @@
 # Notification settings. Installed as /etc/xdg/mako/config.
 # mako does not look in /etc/xdg by itself; the `start-mako` helper passes
-# this file unless you have your own ~/.config/mako/config. See `man 5 mako`.
+# this file unless you have your own ~/.config/mako/config. All options:
+# https://github.com/emersion/mako/blob/master/doc/mako.5.scd
 
 font=Noto Sans 12
 anchor=bottom-right

@@ -1,5 +1,5 @@
 # Firmware, graphics, keyboard, power, Bluetooth, and lid/power-key behavior.
-{ ... }:
+{ config, ... }:
 
 {
   # Wi-Fi, Bluetooth and GPU firmware, and AMD CPU microcode updates.
@@ -47,6 +47,9 @@
       extraConfig = builtins.readFile ../files/keyd/chromebook.conf;
     };
   };
+  # The keyd command itself (for `sudo keyd monitor` and `sudo keyd reload`).
+  # The NixOS module only runs the daemon; it doesn't put keyd on the PATH.
+  environment.systemPackages = [ config.services.keyd.package ];
 
   # keyd re-sends every key through its own virtual keyboard. Tell libinput
   # that keyboard is built in, so "disable touchpad while typing" still

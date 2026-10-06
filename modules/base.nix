@@ -67,12 +67,8 @@ in
 
     # zram is much faster than disk swap, so let the kernel use it earlier.
     # 180 is the value Fedora and Pop!_OS use with zram (the kernel allows
-    # 0-200; the default of 60 assumes slow disk swap). page-cluster 0 turns
-    # off swap read-ahead, which only helps on real disks.
-    boot.kernel.sysctl = {
-      "vm.swappiness" = 180;
-      "vm.page-cluster" = 0;
-    };
+    # 0-200; the default of 60 assumes slow disk swap).
+    boot.kernel.sysctl."vm.swappiness" = 180;
 
     # Kill the biggest program before the whole system freezes when memory
     # runs out, and show a desktop notification when it does.

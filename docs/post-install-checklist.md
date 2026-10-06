@@ -53,16 +53,32 @@ the commands. If something fails, see [troubleshooting.md](troubleshooting.md).
 
 First check what the keys send, then that the shortcuts work.
 
-- [ ] Run `sudo keyd monitor` and press each top-row key, then Search + each
-  top-row key. Write down anything odd. **Ctrl+C** stops it.
+- [ ] **Raw keys (what the keyboard itself sends).** keyd normally takes over
+  the keyboard, so stop it for a moment. While it is stopped, the top row
+  sends plain F-keys or media keys.
 
-  The keyboard should appear as `AT Translated Set 2 keyboard` (or `cros_ec`).
-  For each top-row key you see the original key (`f1` … `f10`, or `back`,
-  `forward`, …) and then what keyd sends.
+  ```
+  sudo systemctl stop keyd
+  sudo keyd monitor
+  ```
 
-- [ ] Run `wev`, then press keys inside its window to see the names the
-  desktop receives (for example `XF86Back`, `F1`, `XF86LaunchA`). Close it with
-  **Search+Q**.
+  The keyboard shows as `AT Translated Set 2 keyboard`. Press each top-row
+  key, left to right. You should see either `f1` … `f10`, or `back`,
+  `forward`, `refresh`, `zoom`, `scale`, `brightnessdown`, `brightnessup`,
+  `mute`, `volumedown`, `volumeup`. Write down anything different. Then press
+  **Ctrl+C** and start keyd again:
+
+  ```
+  sudo systemctl start keyd
+  ```
+
+- [ ] **Remapped keys (what the desktop gets).** Run `wev` and press keys
+  inside its window. The top-row keys should show as `XF86Back`,
+  `XF86Forward`, `XF86Reload`, `F11`, `XF86LaunchA`, `XF86MonBrightnessDown`,
+  `XF86MonBrightnessUp`, `XF86AudioMute`, `XF86AudioLowerVolume`,
+  `XF86AudioRaiseVolume`, and Search + top-row key as `F1` … `F10`. Close it
+  with **Search+Q**. (`sudo keyd monitor` with keyd running shows the same
+  remapped keys, from `keyd virtual keyboard`.)
 
 Then try each one (see the table in README section 9):
 
@@ -79,7 +95,7 @@ Then try each one (see the table in README section 9):
 - [ ] Search+B → Firefox, Search+M → Thunderbird, Search+E → Files
 - [ ] Search+L → lock screen (type your password and press Enter to unlock)
 - [ ] Alt+[ and Alt+] snap left/right; Alt+= maximizes; Alt+Tab switches
-- [ ] Search+Q and Alt+F4 close a window
+- [ ] Search+Q and Alt+Fullscreen (sends Alt+F4) close a window
 - [ ] Search+Shift+S → drag to pick an area; Ctrl+Overview → whole screen.
   Both save to `~/Pictures/Screenshots` and copy to the clipboard.
 - [ ] Power key → suspends (press it again, or open the lid, to wake)
@@ -136,10 +152,26 @@ Then try each one (see the table in README section 9):
 
 ## 12. Boot an older version and come back
 
-- [ ] Run `sysupdate` once (even with no changes, it makes sure updating
-  works).
+Right after installing there is only one version, so first make a second one
+with a small, harmless change:
+
+- [ ] Change the desktop background color: in `~/nixos-config/files/labwc/autostart`,
+  change `#3b5b74` on the `swaybg` line to another color, for example
+  `#4a6b54`. Then apply it:
+
+  ```
+  nano ~/nixos-config/files/labwc/autostart
+  nixos-rebuild switch --sudo --flake ~/nixos-config#liara
+  nixos-rebuild list-generations
+  ```
+
+  The last command should now list **2** generations. (The new color shows
+  after you log out and back in. You can undo the change later with
+  `git -C ~/nixos-config checkout files/labwc/autostart`.)
 - [ ] Reboot. While the boot menu shows (2 seconds), press **↓** to stop the
-  countdown. Pick the second entry and press Enter. The desktop starts.
+  countdown. Pick the **second NixOS entry** (the older one; not "Reboot Into
+  Firmware Interface") and press Enter. The desktop starts with the old
+  color.
 - [ ] Reboot again and let it start the first (newest) entry.
 
 Done. 🎉

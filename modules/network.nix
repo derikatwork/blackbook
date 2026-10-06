@@ -21,10 +21,7 @@ in
   networking.modemmanager.enable = false;
 
   # Tailscale. After installing, run `sudo tailscale up` once and log in.
-  services.tailscale = {
-    enable = true;
-    openFirewall = true; # UDP port for direct connections between devices
-  };
+  services.tailscale.enable = true;
 
   networking.firewall = {
     enable = true;

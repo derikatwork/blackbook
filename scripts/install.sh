@@ -16,7 +16,7 @@
 #   6. Check the detected hardware's kernel modules against the repo
 #   7. Install NixOS (nixos-install)
 #   8. Set your password
-#   9. Give the repo to your user (and copy the installer's Wi-Fi network)
+#   9. Give the repo to your user
 #  10. Print the next steps
 set -euo pipefail
 
@@ -85,7 +85,7 @@ if [ ! -e /etc/NIXOS ] || ! command -v nixos-install >/dev/null; then
   die "This must be run from the NixOS installer USB."
 fi
 [ -d /sys/firmware/efi ] ||
-  die "The installer did not start in UEFI mode. With MrChromebox UEFI firmware this should not happen; see docs/troubleshooting.md."
+  die "The installer did not start in UEFI mode. Make sure the MrChromebox UEFI Full ROM firmware is installed (README section 5). Then restart, press Esc at the rabbit logo, choose Boot Menu, and pick the USB stick."
 if [ ! -f "$REPO/flake.nix" ] || [ ! -f "$REPO/hosts/$HOST/configuration.nix" ]; then
   die "Cannot find flake.nix and hosts/$HOST/ in $REPO."
 fi
@@ -173,12 +173,11 @@ mkfs.fat -F 32 -n BOOT "$PART1" >/dev/null
 mkfs.btrfs --force --label nixos "$PART2" >/dev/null
 udevadm settle
 
-# The system mounts by label, so the labels must point at this disk only.
-for pair in "BOOT:$PART1" "nixos:$PART2"; do
-  label="${pair%%:*}"
-  part="${pair#*:}"
-  [ "$(readlink -f "/dev/disk/by-label/$label")" = "$(readlink -f "$part")" ] ||
-    die "Another drive also has a partition labeled '$label'. Unplug other drives (keep the installer USB) and run this script again."
+# The system mounts by label, so each label must exist exactly once.
+for label in BOOT nixos; do
+  count="$(lsblk -rno LABEL | grep -cxF -- "$label" || true)"
+  [ "$count" -eq 1 ] ||
+    die "Found $count partitions labeled '$label' (expected 1). Unplug other drives (keep the installer USB) and run this script again."
 done
 
 # ---- 3. Subvolumes ------------------------------------------------------------
@@ -215,8 +214,16 @@ REPO_HW="$TARGET_REPO/hosts/$HOST/hardware-configuration.nix"
 INITRD='list [ "boot" "initrd" "availableKernelModules" ] ++ list [ "boot" "initrd" "kernelModules" ]'
 KERNEL='list [ "boot" "kernelModules" ]'
 
-missing_initrd="$(comm -23 <(module_list "$DETECTED" "$INITRD" | sort -u) <(module_list "$REPO_HW" "$INITRD" | sort -u))"
-missing_kernel="$(comm -23 <(module_list "$DETECTED" "$KERNEL" | sort -u) <(module_list "$REPO_HW" "$KERNEL" | sort -u))"
+# Read each list on its own first, so a failure stops the script instead of
+# looking like "nothing is missing".
+detected_initrd="$(module_list "$DETECTED" "$INITRD")" || die "Could not read the module lists from $DETECTED."
+detected_kernel="$(module_list "$DETECTED" "$KERNEL")" || die "Could not read the module lists from $DETECTED."
+repo_initrd="$(module_list "$REPO_HW" "$INITRD")" || die "Could not read the module lists from $REPO_HW."
+repo_kernel="$(module_list "$REPO_HW" "$KERNEL")" || die "Could not read the module lists from $REPO_HW."
+[ -n "$detected_initrd" ] || die "nixos-generate-config found no kernel modules at all, which should not happen. See $DETECTED."
+
+missing_initrd="$(comm -23 <(printf '%s\n' "$detected_initrd" | sort -u) <(printf '%s\n' "$repo_initrd" | sort -u))"
+missing_kernel="$(comm -23 <(printf '%s\n' "$detected_kernel" | sort -u) <(printf '%s\n' "$repo_kernel" | sort -u))"
 
 if [ -n "$missing_initrd$missing_kernel" ]; then
   umount -R /mnt
@@ -250,7 +257,8 @@ info "All detected kernel modules are in the repo."
 # ---- 7. Install ---------------------------------------------------------------
 step "7/10  Installing NixOS. This downloads about 2 GB and takes a while."
 info "Everything comes ready-made from cache.nixos.org; only small config files are built here."
-nixos-install --root /mnt --flake "$TARGET_REPO#$HOST" --no-root-passwd
+# --no-channel-copy: this system uses the flake, not the installer's channel.
+nixos-install --root /mnt --flake "$TARGET_REPO#$HOST" --no-root-passwd --no-channel-copy
 
 # ---- 8. Password --------------------------------------------------------------
 step "8/10  Choose the password for '$USERNAME'"
@@ -259,17 +267,9 @@ until nixos-enter --root /mnt -c "passwd $USERNAME"; do
   warn "The password was not set. Please try again."
 done
 
-# ---- 9. Ownership (and Wi-Fi) -------------------------------------------------
+# ---- 9. Ownership -------------------------------------------------------------
 step "9/10  Giving ~/nixos-config to '$USERNAME'"
 nixos-enter --root /mnt -c "chown -R $USERNAME:users /home/$USERNAME && chmod 700 /home/$USERNAME"
-
-# Copy the Wi-Fi network you joined in the installer, so the laptop is online
-# on first boot. These files stay on this computer; they are not in the repo.
-if compgen -G "/etc/NetworkManager/system-connections/*.nmconnection" >/dev/null; then
-  info "Copying the installer's saved Wi-Fi network(s)."
-  install -d -m 700 /mnt/etc/NetworkManager/system-connections
-  install -m 600 /etc/NetworkManager/system-connections/*.nmconnection /mnt/etc/NetworkManager/system-connections/
-fi
 
 # ---- 10. Done -----------------------------------------------------------------
 step "10/10  Final checks"
@@ -287,7 +287,8 @@ cat <<EOF
     1. Type:  reboot
     2. Remove the USB stick when the screen goes dark.
     3. The boot menu shows for 2 seconds, then the desktop starts by itself.
-    4. Open a terminal (Ctrl+Alt+T) and run:  sudo tailscale up
-    5. Go through docs/post-install-checklist.md.
+    4. Connect to Wi-Fi with the Wi-Fi icon at the bottom right.
+    5. Open a terminal (Ctrl+Alt+T) and run:  sudo tailscale up
+    6. Go through docs/post-install-checklist.md.
 
 EOF

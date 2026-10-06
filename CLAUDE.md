@@ -374,5 +374,9 @@ These were answered and the plan was approved; don't ask again unless something 
 - `sysupdate` and `sysrollback` use `nixos-rebuild ... --sudo` instead of `sudo nixos-rebuild ...`: evaluation and building run as the user (who owns the git repo), and only activation uses sudo.
 - nm-applet and earlyoom's notifier (systembus-notify) are started from labwc's autostart, because labwc doesn't activate `graphical-session.target`.
 - labwc 0.9 updates the D-Bus/systemd activation environment itself, so autostart doesn't.
-- mako and swaylock don't read `/etc/xdg`; the `start-mako` and `lock-screen` helpers pass `/etc/xdg/...` explicitly unless the user has a `~/.config` copy.
+- mako and swaylock don't read `/etc/xdg`; the `start-mako` and `lock-screen` helpers pass `/etc/xdg/...` explicitly unless the user has a `~/.config` copy. mako is kept off the PATH and its D-Bus activation file is replaced by one that runs `start-mako`, so on-demand starts also get the 5-second timeout.
+- The `keyd` command is added to the PATH (the NixOS module only runs the daemon) so `sudo keyd monitor` works.
+- Alt + the Fullscreen key sends Alt+F4 (keyd `[alt]` layer), because the keyboard has no real F4 key.
 - Not running (removed defaults, not additions): speech-dispatcher service, ModemManager, NixOS's default font set.
+- `install.sh` uses `nixos-install --no-channel-copy` (the flake doesn't use the installer's channel).
+- `flake.lock` was first written in a sandbox that could reach GitHub only over git, so it was locked through a git fetch of the same commit and rewritten as a normal `github:` entry. The NAR hash matches a `git archive` of that commit (what GitHub serves). `nix flake update` replaces it normally.

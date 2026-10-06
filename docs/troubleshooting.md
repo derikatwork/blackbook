@@ -111,15 +111,20 @@ password), or boot an older entry from the boot menu (README section 9).
 
 ## Wrong keys
 
-1. See what a key actually sends:
+1. See what a key actually sends. keyd takes over the keyboard while it
+   runs, so stop it first:
 
    ```
+   sudo systemctl stop keyd
    sudo keyd monitor
    ```
 
-   Press the key, read the name, and stop with **Ctrl+C**.
+   Press the key and read its name (the device is
+   `AT Translated Set 2 keyboard`). Stop with **Ctrl+C**, then start keyd
+   again with `sudo systemctl start keyd`.
 2. Edit `files/keyd/chromebook.conf` in the repo. The left side of `=` is the
-   key name from `keyd monitor`, the right side is what to send.
+   key name you saw in step 1 (with keyd stopped), the right side is what to
+   send.
 3. Apply it with `sysupdate` (after pushing) or
    `nixos-rebuild switch --sudo --flake ~/nixos-config#liara`.
 4. To see what the desktop receives after keyd, run `wev` and press the key.
@@ -168,21 +173,29 @@ sudo nixos-enter --root /mnt -c 'NIXOS_INSTALL_BOOTLOADER=1 /nix/var/nix/profile
 
 ### Putting the original ChromeOS firmware back
 
-You need the backup from USB stick #1 (`BACKUP-LIARA-....rom`), and write
-protection must be off again (battery disconnected, running on the charger,
-see README section 4). Then follow MrChromebox's
+> ⚠️ This replaces the firmware again. Afterwards NixOS no longer boots, and
+> reinstalling ChromeOS erases the whole disk.
+
+You need the backup from USB stick #1 (`stock-firmware-LIARA-<date>.rom`), and
+write protection must be off again (battery disconnected, running on the
+charger, see README section 4). Then follow MrChromebox's
 [Restoring Stock Firmware](https://docs.mrchromebox.tech/docs/reverting/flashing-stock.html):
 
-1. Start Linux. NixOS itself works, or the NixOS installer USB (connect Wi-Fi
-   with `nmtui`).
+1. Start a **normal live Linux USB, such as Ubuntu or Fedora**, made as
+   described in MrChromebox's
+   [Making a Bootable USB](https://docs.mrchromebox.tech/docs/support/bootableusb.html).
+   (The firmware script doesn't run on NixOS or the NixOS installer: it needs
+   tools NixOS doesn't provide in the usual places.) Connect to Wi-Fi and open
+   a terminal.
 2. Run the Firmware Utility Script:
 
    ```
    cd; curl -LOf https://mrchromebox.tech/firmware-util.sh && sudo bash firmware-util.sh
    ```
 
-3. Choose **Restore Stock Firmware**, then **Restore from USB backup**, and pick
-   the backup file on USB stick #1.
+3. Choose **Restore Stock Firmware**, then **Restore using a stock firmware
+   backup on USB**. Insert USB stick #1 when asked; the script lists the
+   files on it, and you pick or type the backup's file name exactly as shown.
 4. Reboot, then reinstall ChromeOS with a
    [ChromeOS Recovery USB](https://docs.mrchromebox.tech/docs/reverting/recovery-usb.html).
 
@@ -228,8 +241,10 @@ see README section 4). Then follow MrChromebox's
 - **A program in the panel or tray is missing:** start it from a terminal to
   see its error (for example `waybar` or `nm-applet --indicator`). They are
   started by `/etc/xdg/labwc/autostart`.
-- **No notifications:** `notify-send test hello` should show one at the bottom
-  right. If not, run `start-mako` in a terminal and read the error.
+- **No notifications:** run `start-mako` in a terminal and read the error
+  (if it says another notification daemon is running, that's fine). Then
+  `notify-send test hello` should show a message at the bottom right for
+  5 seconds.
 - **Lock screen doesn't accept the password:** type your user password (the
   one you chose during the install) and press Enter. If the lock screen is
   stuck, switch to a text console (**Ctrl+Alt+Forward**), log in, and run

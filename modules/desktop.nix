@@ -6,14 +6,27 @@ let
   cfg = config.local;
   labwc = "${config.programs.labwc.package}/bin/labwc";
 
-  # Small helper commands from files/bin, put on the PATH.
-  helper = name: pkgs.writeShellScriptBin name (builtins.readFile (../files/bin + "/${name}"));
-  helpers = map helper [
-    "lock-screen"
-    "power-menu"
-    "screenshot"
-    "start-mako"
-  ];
+  # Small helper commands from files/bin, put on the PATH. @mako@ is
+  # filled in with mako's full path (mako itself is not on the PATH, below).
+  helper =
+    name:
+    pkgs.writeShellScriptBin name (
+      builtins.replaceStrings [ "@mako@" ] [ "${pkgs.mako}/bin/mako" ] (
+        builtins.readFile (../files/bin + "/${name}")
+      )
+    );
+  startMako = helper "start-mako";
+  helpers = [ startMako ] ++ map helper [ "lock-screen" "power-menu" "screenshot" ];
+
+  # If a program sends a notification before the autostart has started
+  # mako, D-Bus starts the notification daemon on demand. mako's own D-Bus
+  # file would start it without our config (no 5-second timeout), so mako
+  # is kept off the PATH and D-Bus is pointed at start-mako instead.
+  makoDbusService = pkgs.writeTextDir "share/dbus-1/services/org.freedesktop.Notifications.service" ''
+    [D-BUS Service]
+    Name=org.freedesktop.Notifications
+    Exec=${startMako}/bin/start-mako
+  '';
 
   # The polkit agent is not on the PATH, so its full path is filled in here.
   labwcAutostart =
@@ -147,7 +160,6 @@ in
       waybar
       fuzzel
       foot
-      mako
       swaybg
       swayidle
       swaylock
@@ -165,6 +177,8 @@ in
       xdg-user-dirs
     ])
     ++ helpers;
+
+  services.dbus.packages = [ makoDbusService ];
 
   # ---- Config files -------------------------------------------------------
   # Installed system-wide in /etc/xdg. These programs read /etc/xdg (via
