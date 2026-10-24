@@ -7,7 +7,7 @@ the commands. If something fails, see [troubleshooting.md](troubleshooting.md).
 
 - [ ] After the 2-second boot menu, the desktop appears without asking for a
   password, with the panel at the bottom.
-- [ ] The kernel is 6.19 or newer (this prints the version, for example `7.2.9`):
+- [ ] The kernel is 6.19 or newer (this prints the version, for example `7.3`):
 
   ```
   uname -r

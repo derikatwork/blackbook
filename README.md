@@ -545,7 +545,7 @@ system.
 
 - **Kernel:** speaker and microphone support for Stoney Ridge arrived in Linux
   6.19, and NixOS 26.05 defaults to 6.18. So this uses the newest kernel
-  (`linuxPackages_latest`, 7.2.9 when this was written). Like everything else,
+  (`linuxPackages_latest`, 7.3 when this was last updated). Like everything else,
   it comes ready-built from cache.nixos.org; nothing big is compiled on the
   laptop.
 - **1 GiB boot partition, 3 boot entries:** each entry stores a kernel and

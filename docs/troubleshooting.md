@@ -197,7 +197,8 @@ charger, see README section 4). Then follow MrChromebox's
 
 3. Choose **Restore Stock Firmware**, then **Restore using a stock firmware
    backup on USB**. Insert USB stick #1 when asked; the script lists the
-   files on it, and you pick or type the backup's file name exactly as shown.
+   firmware files on it with numbers, and you type the number of the
+   `stock-firmware-LIARA-<date>.rom` file.
 4. Reboot, then reinstall ChromeOS with a
    [ChromeOS Recovery USB](https://docs.mrchromebox.tech/docs/reverting/recovery-usb.html).
 
@@ -248,9 +249,17 @@ charger, see README section 4). Then follow MrChromebox's
   `notify-send test hello` should show a message at the bottom right for
   5 seconds.
 - **Lock screen doesn't accept the password:** type your user password (the
-  one you chose during the install) and press Enter. If the lock screen is
-  stuck, switch to a text console (**Ctrl+Alt+Forward**), log in, and run
-  `sudo systemctl restart greetd`. That ends the desktop session (unsaved work
-  is lost) and shows the login screen.
+  one you chose during the install) and press Enter.
+- **Lock screen is gone but the screen stays dark or frozen:** the lock
+  program stopped, and for safety the desktop stays hidden. Switch to a text
+  console (**Ctrl+Alt+Forward**), log in, and start a new lock screen:
+
+  ```
+  WAYLAND_DISPLAY=wayland-0 lock-screen
+  ```
+
+  Then press **Ctrl+Alt+Back** and unlock as usual. If that doesn't help,
+  `sudo systemctl restart greetd` ends the desktop session (unsaved work is
+  lost) and starts a fresh one.
 - **"Out of memory" notification:** earlyoom closed the biggest program to
   keep the laptop responsive. Close some Firefox tabs.
