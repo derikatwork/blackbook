@@ -15,6 +15,11 @@ in
   # Show the boot menu for 2 seconds (press an arrow key to stop the countdown).
   boot.loader.timeout = 2;
 
+  # Don't allow editing the kernel command line from the boot menu. With it
+  # on (the NixOS default), anyone at the keyboard can type init=/bin/sh and
+  # get a root shell without a password. Picking older versions still works.
+  boot.loader.systemd-boot.editor = false;
+
   # `bootctl install` also writes the fallback loader \EFI\BOOT\BOOTX64.EFI,
   # which the firmware boots if its boot entry is ever lost. This makes sure
   # the file is still there after every rebuild.

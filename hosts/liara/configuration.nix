@@ -11,6 +11,7 @@
     ../../modules/audio.nix
     ../../modules/network.nix
     ../../modules/desktop.nix
+    ../../modules/updates.nix
   ];
 
   # Also the flake output name (flake.nix) and the Tailscale device name.

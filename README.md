@@ -16,7 +16,9 @@ change it by editing text files.
 - Wi-Fi, Bluetooth, sound, brightness, and suspend on lid close
 - Chromebook keyboard keys that work like they do on ChromeOS
 - [Tailscale](https://tailscale.com) for reaching the laptop from your other devices
-- Easy updates (`sysupdate`), cleanup (`sysclean`), and rollback (`sysrollback`)
+- Automatic updates in the background that install at the next restart, like
+  on ChromeOS
+- Easy config changes (`sysupdate`), cleanup (`sysclean`), and rollback (`sysrollback`)
 
 > **This erases ChromeOS and everything on the laptop.** It also replaces the
 > laptop's firmware. Read each step before you do it. Warnings are marked ⚠️.
@@ -299,6 +301,9 @@ Do this on your main computer.
 4. Go through the [post-install checklist](docs/post-install-checklist.md).
    It tests every key, sound, the lid, Bluetooth, and more.
 
+From now on the laptop updates itself (see [Automatic updates](#automatic-updates)).
+When a notification says **Update ready**, restart when it suits you.
+
 ## 9. Daily use
 
 ### Keyboard shortcuts
@@ -355,7 +360,43 @@ calendar).
 - **Bluetooth:** click the Bluetooth tray icon (or right-click the desktop →
   Bluetooth), choose **Search**, then pair your device.
 
-### Updating: `sysupdate`
+### Automatic updates
+
+Once a day, the laptop downloads the newest NixOS 26.05 software (security
+fixes and bug fixes) in the background and installs it **for the next
+restart**. Nothing changes while you work. When an update is ready, a
+notification says **Update ready**: restart when it suits you (⏻ → Reboot).
+
+- It runs at 04:40, or soon after the laptop wakes up or starts if it was
+  asleep or off then. It waits up to 15 minutes for Wi-Fi; with no internet it
+  tries again the next day. It runs at low priority, so the laptop stays
+  responsive.
+- While an update waits for a restart, no further one is downloaded. That
+  way the boot menu always still has the version you are running now, in case
+  the new one has a problem (see [Undoing a bad update](#undoing-a-bad-update)).
+- It never compiles big programs on the laptop. If cache.nixos.org hasn't
+  finished building a new kernel, Firefox or similar yet, the update stops
+  and tries again the next day.
+- It only updates software. Your settings (the files in this repo) stay as
+  they are on the laptop; changes to them are applied with `sysupdate`.
+- If an update fails, a notification says so. To see why:
+
+  ```
+  journalctl -u nixos-upgrade -n 40
+  ```
+
+- To see when it runs next, or to run it now (it takes a few minutes, longer
+  for big updates):
+
+  ```
+  systemctl list-timers nixos-upgrade
+  sudo systemctl start nixos-upgrade
+  ```
+
+To turn automatic updates off, add `system.autoUpgrade.enable = false;` to
+`hosts/liara/configuration.nix` and run `sysupdate`.
+
+### Changing the config: `sysupdate`
 
 The configuration lives in `~/nixos-config` (a copy of this GitHub repo). To
 change the system, change the files in this repo on GitHub (or on your main
@@ -365,24 +406,17 @@ computer and push), then on the Chromebook run:
 sysupdate
 ```
 
-It downloads the newest version of the repo (`git pull`) and switches to it.
-It asks for your password.
+It downloads the newest version of the repo (`git pull`) and switches to it
+right away, with the newest software too (like the automatic update, it
+first checks that nothing big would have to be compiled). It asks for your
+password.
 
-To get **newer software** (security fixes), update `flake.lock`: on your main
-computer run `nix flake update` in the repo, commit, push, then run `sysupdate`
-on the Chromebook. Or, on the Chromebook:
-
-```
-cd ~/nixos-config && nix flake update && nixos-rebuild switch --sudo --flake .#liara
-```
-
-(Then push the new `flake.lock` to GitHub, or the next `git pull` will
-complain. If it does, run `git -C ~/nixos-config checkout flake.lock` and try
-again.)
-
-If you edit files directly in `~/nixos-config`, run
-`nixos-rebuild switch --sudo --flake ~/nixos-config#liara` to apply them.
+If you edit files directly in `~/nixos-config`, `sysupdate` applies them too.
 New files must be added to git first (`git add`), or Nix won't see them.
+
+`flake.lock` records the exact software versions this repo was tested with,
+which the installer uses. Updates use the newest versions instead, so you
+don't need to update `flake.lock` yourself.
 
 ### Cleaning up: `sysclean`
 
@@ -394,6 +428,10 @@ Deletes old system versions and frees their disk space, then refreshes the
 boot menu. Old versions older than 14 days are also cleaned up automatically
 every week. Use `df -h /` to see free space.
 
+If an update is waiting for a restart, restart first: `sysclean` keeps only
+the newest version, so the boot menu would no longer have the one you are
+running now to fall back to.
+
 ### Undoing a bad update
 
 Every update keeps the previous version ("generation"). To go back:
@@ -402,12 +440,25 @@ Every update keeps the previous version ("generation"). To go back:
 - **If the laptop doesn't start properly:** restart it, and while the boot menu
   shows (2 seconds), press **↓** to stop the countdown. Pick the **second**
   entry (the version just before the newest) and press Enter. Once you're
-  back, run `sysrollback` to make that version the default again.
+  back, run `sysrollback` to make that version the default again. (Until you
+  do, the laptop keeps starting the newest version, and the automatic update
+  keeps saying **Update ready**.)
 
   `sysrollback` always goes back exactly one version from the newest. The
   menu keeps the 3 newest versions. If you booted an even older one and want
-  to keep it, run `sudo /run/current-system/bin/switch-to-configuration boot`
-  instead; that makes the version you are running the default.
+  to keep it, run these instead; they make the version you are running the
+  newest one and the default:
+
+  ```
+  sudo nix-env --profile /nix/var/nix/profiles/system --set /run/current-system
+  sudo /run/current-system/bin/switch-to-configuration boot
+  ```
+
+The automatic update downloads newer versions again the next day. NixOS 26.05
+usually fixes problems like this within a few days; if a new version still
+has the problem, go back again, and ask on the
+[chrultrabook forum](https://forum.chrultrabook.com/) or the
+[NixOS Discourse](https://discourse.nixos.org/).
 
 ### Display size
 
@@ -464,12 +515,17 @@ on your tailnet):
 
 ```
 cd blackbook   # your clone of this repo
-nix run github:NixOS/nixpkgs/nixos-26.05#nixos-rebuild -- switch --flake .#liara --target-host derik@liara --sudo --ask-sudo-password
+nix run github:NixOS/nixpkgs/nixos-26.05#nixos-rebuild -- switch --flake .#liara \
+  --override-input nixpkgs "$(nix eval --raw --file flake.nix inputs.nixpkgs.url)" \
+  --target-host derik@liara --sudo --ask-sudo-password
 ```
 
 It builds the system on your main computer, copies it to the Chromebook, and
-switches to it. It asks for the Chromebook password (for `sudo`). Push your
-changes to GitHub too, so the Chromebook's `sysupdate` stays in step.
+switches to it. It asks for the Chromebook password (for `sudo`). The
+`--override-input` line uses the newest software, like the Chromebook's own
+updates; without it, the older versions in `flake.lock` would replace newer
+ones the Chromebook already has. Push your changes to GitHub too, so the
+Chromebook's `sysupdate` stays in step.
 
 ## 11. Upgrading to NixOS 26.11
 
@@ -487,8 +543,11 @@ NixOS 26.05 gets updates until **2026-12-31**. Before then, move to 26.11:
    ```
    cd ~/nixos-config
    nix flake update
-   nixos-rebuild boot --sudo --flake .#liara
+   update-check --flake .#liara && nixos-rebuild boot --sudo --flake .#liara
    ```
+
+   (`update-check` stops if something big would have to be compiled on the
+   laptop. If it does, try again in a day or two.)
 
    If this stops with an error about an option, read the 26.11 release notes
    (in the [NixOS manual](https://nixos.org/manual/nixos/stable/release-notes))
@@ -496,6 +555,10 @@ NixOS 26.05 gets updates until **2026-12-31**. Before then, move to 26.11:
 
 4. Reboot. If something is wrong, pick the previous entry in the boot menu.
 5. Commit and push `flake.nix` and `flake.lock`.
+
+From then on, automatic updates and `sysupdate` follow `nixos-26.11`. (Until
+you do this, the automatic updates stay on 26.05, because they keep the
+settings the laptop is running.)
 
 Don't change `system.stateVersion` in `configuration.nix`. It stays at
 `"26.05"`.
@@ -516,6 +579,7 @@ modules/
   audio.nix                   Sound (PipeWire)
   network.nix                 Wi-Fi, Tailscale, firewall, SSH
   desktop.nix                 labwc, login, look, fonts, apps, config files
+  updates.nix                 Automatic updates
 files/                        Config files for labwc, Waybar, fuzzel, foot, mako,
                               swaylock, nano, keyd, GTK, and small helper scripts
 scripts/install.sh            Run from the NixOS installer (section 7)
@@ -545,12 +609,19 @@ system.
 
 - **Kernel:** speaker and microphone support for Stoney Ridge arrived in Linux
   6.19, and NixOS 26.05 defaults to 6.18. So this uses the newest kernel
-  (`linuxPackages_latest`, 7.2.9 when this was written). Like everything else,
+  (`linuxPackages_latest`, 7.3 when this was last updated). Like everything else,
   it comes ready-built from cache.nixos.org; nothing big is compiled on the
   laptop.
 - **1 GiB boot partition, 3 boot entries:** each entry stores a kernel and
   initrd (about 75 MB together) on the boot partition. Too small a partition
   has broken installs on other Stoney Ridge Chromebooks.
+- **Automatic updates install for the next restart** instead of switching
+  the running system, so Wi-Fi, Bluetooth and the desktop don't restart while
+  you use them, and only one update waits at a time, so the version you are
+  running stays in the 3-entry boot menu. They rebuild the exact copy of
+  this repo the laptop is running with the newest commit of the
+  `nixos-26.05` branch (`modules/updates.nix`), and `files/bin/update-check`
+  stops them if that would mean compiling something big here.
 - **Graphics driver loaded early:** amdgpu is loaded in the initrd, so the
   desktop never starts on the firmware's temporary framebuffer and then loses
   its screen when amdgpu takes over.

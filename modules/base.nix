@@ -5,6 +5,10 @@
 let
   cfg = config.local;
   flakeRef = "~/nixos-config#${config.networking.hostName}";
+  # Build from the repo, but with the newest commit of the nixpkgs branch named
+  # in flake.nix, like the automatic updates (modules/updates.nix) do. Using the
+  # older commit in flake.lock would undo those updates.
+  updateFlags = ''--flake ${flakeRef} --override-input nixpkgs "$(nix eval --raw --file ~/nixos-config/flake.nix inputs.nixpkgs.url)"'';
 in
 {
   # Small set of per-machine settings, filled in by hosts/<hostname>/configuration.nix.
@@ -107,9 +111,10 @@ in
     environment.variables.EDITOR = "nano";
 
     environment.shellAliases = {
-      # Get the newest config from GitHub and switch to it. The build runs
-      # as you; only the final "activate" step uses sudo.
-      sysupdate = "git -C ~/nixos-config pull && nixos-rebuild switch --sudo --flake ${flakeRef}";
+      # Get the newest config from GitHub and switch to it, with the newest
+      # packages. update-check first makes sure nothing big would be
+      # compiled. The build runs as you; only the final "activate" step uses sudo.
+      sysupdate = "git -C ~/nixos-config pull && update-check ${updateFlags} && nixos-rebuild switch --sudo ${updateFlags}";
       # Delete old generations, free the disk space, and remove their boot entries.
       sysclean = "nix-collect-garbage -d && sudo nix-collect-garbage -d && sudo /run/current-system/bin/switch-to-configuration boot";
       # Go back to the previous generation.
