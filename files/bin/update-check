@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Check that an update won't compile large programs on this laptop.
+#
+# Takes the same flags as nixos-rebuild (for example --flake ...), works out
+# what the update needs, and fails if it would have to build something that
+# normally comes ready-built from cache.nixos.org, like the kernel, Firefox
+# or mesa. That can happen for a day or two after a new version comes out,
+# while cache.nixos.org is still building it; building it here would take
+# hours. Used by sysupdate and by the daily automatic update
+# (modules/updates.nix).
+# @nixosRebuild@ is replaced with nixos-rebuild's full path when the system is built.
+
+set -euo pipefail
+
+if ! plan=$(@nixosRebuild@ dry-build "$@" 2>&1); then
+  printf '%s\n' "$plan" >&2
+  exit 1
+fi
+printf '%s\n' "$plan" | grep -E 'will be (built|fetched)' || echo "Nothing new to download."
+
+heavy=()
+while read -r drv; do
+  name=${drv#/nix/store/*-}
+  name=${name%.drv}
+  # nixpkgs marks its biggest builds (the kernel, Firefox, Thunderbird, LLVM,
+  # Rust, ...) as needing a "big-parallel" build machine. mesa and GTK aren't
+  # marked, but are too big for this laptop as well.
+  if grep -Eq '"requiredSystemFeatures","[^"]*big-parallel|\\"requiredSystemFeatures\\":\[[^]]*big-parallel' "$drv" ||
+    [[ $name =~ ^(mesa|gtk\+3|gtk4|webkitgtk)-[0-9] ]]; then
+    heavy+=("$name")
+  fi
+done < <(printf '%s\n' "$plan" | sed -n '/will be built:$/,/will be fetched/p' | grep -o '/nix/store/[^ ]*\.drv' || true)
+
+if [ "${#heavy[@]}" -gt 0 ]; then
+  echo "Not updating: these would have to be compiled on this laptop (hours of work):" >&2
+  printf '  %s\n' "${heavy[@]}" >&2
+  echo "cache.nixos.org is probably still building them. Try again in a day." >&2
+  exit 1
+fi

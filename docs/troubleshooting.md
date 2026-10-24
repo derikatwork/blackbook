@@ -9,6 +9,7 @@ password), or boot an older entry from the boot menu (README section 9).
 - [Wrong keys](#wrong-keys)
 - [Firmware problems](#firmware-problems)
 - [Out of disk space](#out-of-disk-space)
+- [Automatic updates](#automatic-updates)
 - [Other problems](#other-problems)
 
 ---
@@ -125,8 +126,8 @@ password), or boot an older entry from the boot menu (README section 9).
 2. Edit `files/keyd/chromebook.conf` in the repo. The left side of `=` is the
    key name you saw in step 1 (with keyd stopped), the right side is what to
    send.
-3. Apply it with `sysupdate` (after pushing) or
-   `nixos-rebuild switch --sudo --flake ~/nixos-config#liara`.
+3. Apply it with `sysupdate` (after pushing, or right away if you edited the
+   file in `~/nixos-config`).
 4. To see what keyd sends, run `sudo keyd monitor` with keyd running (lines
    from `keyd virtual keyboard`). `wev` shows what apps receive, but not keys
    that are desktop shortcuts (Fullscreen, Overview, brightness, volume):
@@ -229,6 +230,51 @@ charger, see README section 4). Then follow MrChromebox's
    journalctl --disk-usage
    sudo journalctl --vacuum-size=50M
    ```
+
+4. Nix keeps copies of downloaded package lists in `/root/.cache/nix` (for
+   the automatic updates) and `~/.cache/nix` (for `sysupdate`). They grow by
+   a few MB per update and are safe to delete; they are downloaded again
+   when needed:
+
+   ```
+   du -sh /root/.cache/nix ~/.cache/nix 2>/dev/null
+   sudo rm -rf /root/.cache/nix ~/.cache/nix
+   ```
+
+## Automatic updates
+
+See what the last runs did:
+
+```
+journalctl -u nixos-upgrade -n 40
+systemctl list-timers nixos-upgrade
+```
+
+What the messages mean:
+
+- **"An update is already installed and waiting for a restart."** Restart
+  the laptop; the next update comes the day after. If you started an older
+  version from the boot menu on purpose, run `sysrollback` instead (README,
+  section 9, "Undoing a bad update").
+- **"Not updating: these would have to be compiled on this laptop"**, followed
+  by names like `linux-…` or `firefox-unwrapped-…`: cache.nixos.org hasn't
+  finished building that new version yet, and compiling it on this laptop
+  would take hours. Nothing to do; it tries again tomorrow. If it still says
+  this after a week, ask for help (it may mean something in the config
+  changes a big package).
+- **Errors about downloading or `github.com`:** the internet connection
+  dropped, or GitHub had a problem. It tries again tomorrow, or run
+  `sudo systemctl start nixos-upgrade` to try now.
+- **"No space left on device":** see [Out of disk space](#out-of-disk-space),
+  then run `sudo systemctl start nixos-upgrade` again.
+- **"Skipped due to 'exec-condition'":** the update didn't start, either
+  because one is already waiting for a restart (the line before says so) or
+  because there was no internet connection for 15 minutes. That's not an
+  error; it runs again the next day. `systemctl list-timers nixos-upgrade`
+  shows when it last ran and when it runs next.
+
+`sysupdate` uses the same safety check, so it can stop with the same
+"Not updating" message.
 
 ## Other problems
 

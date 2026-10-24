@@ -166,17 +166,39 @@ with a small, harmless change:
 
   ```
   nano ~/nixos-config/files/labwc/autostart
-  nixos-rebuild switch --sudo --flake ~/nixos-config#liara
+  sysupdate
   nixos-rebuild list-generations
   ```
 
-  The last command should now list **2** generations. (The new color shows
-  after you log out and back in. You can undo the change later with
-  `git -C ~/nixos-config checkout files/labwc/autostart`.)
+  The last command should now list at least **2** generations. (`sysupdate`
+  also installs the newest software, so the first time can take a while. The
+  new color shows after you log out and back in. You can undo the change
+  later with `git -C ~/nixos-config checkout files/labwc/autostart`.)
 - [ ] Reboot. While the boot menu shows (2 seconds), press **↓** to stop the
   countdown. Pick the **second NixOS entry** (the older one; not "Reboot Into
   Firmware Interface") and press Enter. The desktop starts with the old
   color.
 - [ ] Reboot again and let it start the first (newest) entry.
+
+## 13. Automatic updates
+
+- [ ] The daily update is scheduled (the **NEXT** column shows a time):
+
+  ```
+  systemctl list-timers nixos-upgrade
+  ```
+
+- [ ] Run one now and wait for it to finish (a few minutes, longer if there
+  is a lot to download):
+
+  ```
+  sudo systemctl start nixos-upgrade
+  journalctl -u nixos-upgrade -n 20
+  ```
+
+  The log should end without errors. If there was something new, a
+  notification says **Update ready**; restart to use it. If the log says
+  "Not updating: these would have to be compiled", that's the safety check
+  working; it tries again tomorrow.
 
 Done. 🎉
