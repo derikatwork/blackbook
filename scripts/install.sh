@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Install NixOS on the Lenovo 14e Chromebook, from the NixOS 26.05 minimal
-# installer USB. See README.md, section 7.
+# installer USB or the live USB (its install-liara command runs this).
+# See README.md, section 7.
 #
 # Usage, from the folder you cloned this repo into:
 #   sudo ./scripts/install.sh /dev/mmcblk0

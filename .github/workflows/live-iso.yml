@@ -1,0 +1,75 @@
+# Builds the live USB image (hosts/live/configuration.nix) and publishes it
+# as a GitHub Release with its SHA-256 checksum. README, section 6.
+#
+# Run it from the Actions tab: "Live ISO" -> "Run workflow". Pushing a tag
+# that starts with "v" (for example v2026.11) runs it too, and names the
+# release after the tag.
+name: Live ISO
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # to create the release
+
+concurrency:
+  group: live-iso-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Make room on the runner
+        # The system and the ISO need about 15 GB; drop toolchains this job doesn't use.
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        with:
+          github_access_token: ${{ github.token }}
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Build the ISO
+        run: nix build .#live-iso --print-build-logs
+
+      - name: Check the size
+        # GitHub refuses release files of 2 GiB or more.
+        run: |
+          iso=$(echo result/iso/*.iso)
+          size=$(stat -L -c %s "$iso")
+          echo "$iso: $((size / 1024 / 1024)) MiB"
+          [ "$size" -lt $((2 * 1024 * 1024 * 1024)) ] || { echo "::error::The ISO is 2 GiB or larger; GitHub can't attach it to a release."; exit 1; }
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          src=$(echo result/iso/*.iso)
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="live-$(date -u +%Y-%m-%d)-run$GITHUB_RUN_NUMBER"
+          fi
+          iso="nixos-liara-live-$tag.iso"
+          cp -L "$src" "$iso"
+          sha256sum "$iso" > "$iso.sha256"
+          cat > notes.md <<NOTES
+          Live USB for the Lenovo 14e Chromebook, built from commit $GITHUB_SHA.
+
+          Write \`$iso\` to a USB stick of at least 4 GB (README, section 6), start the
+          Chromebook from it, and choose **Install NixOS on this Chromebook** in the
+          launcher (README, section 7). The installer downloads the newest version of
+          this repo, so an older USB stick still installs the current config.
+
+          Check the download with \`sha256sum -c $iso.sha256\`.
+          NOTES
+          gh release create "$tag" "$iso" "$iso.sha256" \
+            --target "$GITHUB_SHA" --title "Live USB $tag" --notes-file notes.md
