@@ -32,8 +32,8 @@ change it by editing text files.
 3. [Enable Developer Mode](#3-enable-developer-mode)
 4. [Disable write protection](#4-disable-write-protection)
 5. [Flash the UEFI Full ROM firmware](#5-flash-the-uefi-full-rom-firmware)
-6. [Make the live USB](#6-make-the-live-usb)
-7. [Start the live USB and install](#7-start-the-live-usb-and-install)
+6. [Make the NixOS installer USB](#6-make-the-nixos-installer-usb)
+7. [Boot the installer and install](#7-boot-the-installer-and-install)
 8. [First boot](#8-first-boot)
 9. [Daily use](#9-daily-use)
 10. [Updating from your main computer over Tailscale](#10-updating-from-your-main-computer-over-tailscale)
@@ -50,8 +50,7 @@ Also: [Post-install checklist](docs/post-install-checklist.md) ·
 - **Two USB sticks**
   - **Stick #1** (any size, normal FAT32 format): for the backup of the
     laptop's original firmware. Keep this backup forever.
-  - **Stick #2** (at least 4 GB): for the live USB, which installs NixOS.
-    It will be erased.
+  - **Stick #2** (at least 2 GB): for the NixOS installer. It will be erased.
 - **The charger.** It must be a USB-C charger of at least 45 W (the original
   Lenovo charger is fine). The laptop runs from it while the battery is
   unplugged.
@@ -181,30 +180,24 @@ prompt. That is fine. Turn the laptop off (hold Power) and continue.
 
 **Copy the firmware backup** from USB stick #1 to your main computer as well.
 
-## 6. Make the live USB
+## 6. Make the NixOS installer USB
 
-The live USB starts the same desktop you get after installing, straight from
-the stick, without changing the laptop. Its **Install NixOS on this
-Chromebook** entry downloads this repo from GitHub and installs it, so even an
-old stick installs the current config. Do this on your main computer.
+Do this on your main computer.
 
-1. **Download the live USB image.** Open the repo's
-   [Releases page](https://github.com/derikatwork/blackbook/releases) and
-   download the newest `nixos-liara-live-….iso` and the `.iso.sha256` file
-   next to it, into the same folder.
-
-   No release there yet? GitHub builds one for you: in the repo, open the
-   **Actions** tab, click **Live ISO** on the left, then **Run workflow** and
-   the green **Run workflow** button. It takes about an hour; then the new
-   release is on the Releases page. (With Nix on your computer you can also
-   build it yourself: `nix build github:derikatwork/blackbook#live-iso`, which
-   puts it in `result/iso/`.)
-
-2. Check the download isn't damaged. In the download folder, this should
-   print `... OK`:
+1. Download the NixOS 26.05 **minimal** installer and its checksum:
 
    ```
-   sha256sum -c nixos-liara-live-*.iso.sha256
+   curl -LO https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso
+   curl -LO https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso.sha256
+   ```
+
+   (These are the files linked from <https://nixos.org/download/> under
+   "Minimal ISO image, 64-bit Intel/AMD".)
+
+2. Check the download isn't damaged. This should print `... OK`:
+
+   ```
+   echo "$(cut -d' ' -f1 latest-nixos-minimal-x86_64-linux.iso.sha256)  latest-nixos-minimal-x86_64-linux.iso" | sha256sum -c
    ```
 
 3. Find USB stick #2's device name. Run this, plug the stick in, and run it
@@ -214,87 +207,30 @@ old stick installs the current config. Do this on your main computer.
    lsblk -o NAME,SIZE,MODEL,TRAN,RM
    ```
 
-4. Write the image to the stick. Replace `/dev/sdX` with the stick's name
+4. Write the installer to the stick. Replace `/dev/sdX` with the stick's name
    from step 3 (for example `/dev/sdb`; the whole device, not `sdb1`).
 
    > ⚠️ `dd` overwrites whatever you name, without asking. If you name your
    > main computer's disk, you erase it. Check the name and size twice.
 
    ```
-   sudo umount /dev/sdX* 2>/dev/null; sudo dd if="$(ls nixos-liara-live-*.iso | tail -n 1)" of=/dev/sdX bs=4M status=progress conv=fsync
+   sudo umount /dev/sdX* 2>/dev/null; sudo dd if=latest-nixos-minimal-x86_64-linux.iso of=/dev/sdX bs=4M status=progress conv=fsync
    ```
 
    If you prefer a graphical tool, GNOME Disks ("Restore Disk Image…") or
    [Impression](https://flathub.org/apps/io.gitlab.adhami3310.Impression) also
    work.
 
-### Instead: the official NixOS installer
-
-The plain NixOS 26.05 **minimal** installer works too (a text screen instead of
-the desktop; see [With the official installer](#with-the-official-installer)
-in section 7). Download it and its checksum, and check it:
-
-```
-curl -LO https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso
-curl -LO https://channels.nixos.org/nixos-26.05/latest-nixos-minimal-x86_64-linux.iso.sha256
-echo "$(cut -d' ' -f1 latest-nixos-minimal-x86_64-linux.iso.sha256)  latest-nixos-minimal-x86_64-linux.iso" | sha256sum -c
-```
-
-(These are the files linked from <https://nixos.org/download/> under "Minimal
-ISO image, 64-bit Intel/AMD".) Write it to the stick as in step 4, with
-`if=latest-nixos-minimal-x86_64-linux.iso`.
-
-## 7. Start the live USB and install
+## 7. Boot the installer and install
 
 1. Plug USB stick #2 into the Chromebook and the charger into the wall.
 2. Press Power. When the rabbit logo appears, press **Esc**.
 3. Choose **Boot Menu**, then the USB stick. (If it isn't listed, go back,
    unplug and replug the stick, wait 3 seconds, and open the Boot Menu again.)
    Source: [MrChromebox: Booting Your OS](https://docs.mrchromebox.tech/docs/firmware/booting.html)
-4. Pick the first entry in the NixOS menu. After a minute or two the desktop
-   appears, the same one you get after installing, logged in as the user
-   `nixos` (no password). It runs from the stick, so it is slower than the
-   installed system, and nothing you do in it is kept. If the screen locks,
-   press **Enter**.
-5. **Connect to Wi-Fi:** click the Wi-Fi icon at the bottom right of the
-   panel and pick your network.
-6. **Start the installer:** tap **Search** (or press the Overview key), type
-   `install`, and choose **Install NixOS on this Chromebook**. (Or open a
-   terminal with **Ctrl+Alt+T** and run `install-liara`.)
-7. It downloads this repo from GitHub to `~/blackbook`, then lists the disks
-   and asks which one to install on. The internal disk is an eMMC, usually
-   `mmcblk0`, with no `TRAN` value (or `mmc`) and `RM` = `0`. The USB stick
-   shows `TRAN` = `usb`. Ignore entries like `mmcblk0boot0`, `mmcblk0boot1`
-   and `mmcblk0rpmb`: those are small hidden areas of the same chip, not the
-   disk. Type `/dev/mmcblk0` (or what you found) and press Enter.
-
-   > ⚠️ This erases the disk you name, including ChromeOS. The installer shows
-   > the disks again, refuses USB and removable drives, and asks you to type
-   > the disk name once more before it changes anything.
-
-8. The installer explains each step as it goes:
-
-   - It partitions and formats the disk, then copies this repo to
-     `/home/derik/nixos-config`.
-   - It checks that the repo lists every kernel module the hardware needs. If
-     something is missing, it **stops** and tells you exactly which line to add
-     to `~/blackbook/hosts/liara/hardware-configuration.nix`. Add it with
-     `nano`, then start the installer again (step 6); it keeps your change.
-   - It installs NixOS (about 2 GB of downloads).
-   - It asks you to **choose your password** (twice). You need it for `sudo`
-     and to unlock the screen.
-
-9. When it says **NixOS is installed**, click **⏻** at the bottom right,
-   choose **Reboot**, and remove the USB stick when the screen goes dark.
-
-### With the official installer
-
-With the official minimal installer (section 6), you get a text screen
-instead of the desktop:
-
-1. Do steps 1 to 3 above. Pick the first entry in the NixOS menu. After a
-   minute you get a text prompt, already logged in as the user `nixos`.
-2. **Connect to Wi-Fi.** Run `nmtui`, choose **Activate a connection**, pick
+4. Pick the first entry in the NixOS menu. After a minute you get a text prompt,
+   already logged in as the user `nixos`.
+5. **Connect to Wi-Fi.** Run `nmtui`, choose **Activate a connection**, pick
    your network, and type the password. Choose **Back**, then **Quit**. Check
    it works:
 
@@ -302,28 +238,45 @@ instead of the desktop:
    ping -c 3 nixos.org
    ```
 
-3. **Get this repo:**
+6. **Get this repo:**
 
    ```
    git clone https://github.com/derikatwork/blackbook
    ```
 
-4. **Find the internal disk** (see step 7 above for what to look for):
+7. **Find the internal disk.** It is an eMMC, usually `mmcblk0`, with no
+   `TRAN` value (or `mmc`) and `RM` = `0`. The USB stick shows `TRAN` = `usb`.
 
    ```
    lsblk -o NAME,SIZE,MODEL,TRAN,RM
    ```
 
-5. **Install.** Replace `/dev/mmcblk0` if step 4 showed a different name. The
-   warning and the steps are the same as in steps 7 and 8 above (the file to
-   edit, if the module check stops, is
-   `blackbook/hosts/liara/hardware-configuration.nix`):
+   Ignore entries like `mmcblk0boot0`, `mmcblk0boot1`, and `mmcblk0rpmb`.
+   Those are small hidden areas of the same chip, not the disk.
+
+8. **Install.** Replace `/dev/mmcblk0` if step 7 showed a different name:
+
+   > ⚠️ This erases the disk you name, including ChromeOS. The script shows
+   > the disks, refuses USB and removable drives, and asks you to type the
+   > disk name again before it changes anything.
 
    ```
    sudo bash blackbook/scripts/install.sh /dev/mmcblk0
    ```
 
-6. When it says **NixOS is installed**, type `reboot` and remove the USB stick
+   The script explains each step as it goes:
+
+   - It partitions and formats the disk, then copies this repo to
+     `/home/derik/nixos-config`.
+   - It checks that the repo lists every kernel module the hardware needs. If
+     something is missing, it **stops** and tells you exactly which line to add
+     to `blackbook/hosts/liara/hardware-configuration.nix`. Add it with
+     `nano` and run the same command again.
+   - It installs NixOS (about 2 GB of downloads).
+   - It asks you to **choose your password** (twice). You need it for `sudo`
+     and to unlock the screen.
+
+9. When it says **NixOS is installed**, type `reboot` and remove the USB stick
    when the screen goes dark.
 
 ## 8. First boot
@@ -615,11 +568,10 @@ Don't change `system.stateVersion` in `configuration.nix`. It stays at
 ## Repo layout
 
 ```
-flake.nix, flake.lock         Which NixOS version (26.05), the system "liara", the live USB
+flake.nix, flake.lock         Which NixOS version (26.05) and the system "liara"
 hosts/liara/
   configuration.nix           User name, hostname, SSH keys; imports the modules
   hardware-configuration.nix  Disks (by label) and kernel modules
-hosts/live/configuration.nix  The live USB (sections 6 and 7)
 modules/
   base.nix                    Nix settings, cleanup, memory, language, user, shell, tools
   boot.nix                    Boot menu and kernel
@@ -630,9 +582,7 @@ modules/
   updates.nix                 Automatic updates
 files/                        Config files for labwc, Waybar, fuzzel, foot, mako,
                               swaylock, nano, keyd, GTK, and small helper scripts
-scripts/install.sh            Installs NixOS; the live USB's installer runs it (section 7)
-.github/workflows/live-iso.yml
-                              Builds the live USB on GitHub (section 6)
+scripts/install.sh            Run from the NixOS installer (section 7)
 docs/                         Post-install checklist and troubleshooting
 ```
 
@@ -665,11 +615,6 @@ system.
 - **1 GiB boot partition, 3 boot entries:** each entry stores a kernel and
   initrd (about 75 MB together) on the boot partition. Too small a partition
   has broken installs on other Stoney Ridge Chromebooks.
-- **The live USB leaves out some firmware** to stay under GitHub's 2 GiB limit
-  for release files: firmware for Qualcomm phone and ARM-laptop chips, NVIDIA
-  graphics, and server network cards, none of which can be in this laptop.
-  Wi-Fi and Bluetooth firmware is all there; the installed system has
-  everything.
 - **Automatic updates install for the next restart** instead of switching
   the running system, so Wi-Fi, Bluetooth and the desktop don't restart while
   you use them, and only one update waits at a time, so the version you are
