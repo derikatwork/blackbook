@@ -33,7 +33,7 @@ change it by editing text files.
 4. [Disable write protection](#4-disable-write-protection)
 5. [Flash the UEFI Full ROM firmware](#5-flash-the-uefi-full-rom-firmware)
 6. [Make the NixOS installer USB](#6-make-the-nixos-installer-usb)
-7. [Boot the installer and install](#7-boot-the-installer-and-install)
+7. [Install NixOS](#7-install-nixos): start the installer, get this repo, run the install script
 8. [First boot](#8-first-boot)
 9. [Daily use](#9-daily-use)
 10. [Updating from your main computer over Tailscale](#10-updating-from-your-main-computer-over-tailscale)
@@ -221,63 +221,164 @@ Do this on your main computer.
    [Impression](https://flathub.org/apps/io.gitlab.adhami3310.Impression) also
    work.
 
-## 7. Boot the installer and install
+## 7. Install NixOS
+
+In short: you start the NixOS installer from USB stick #2, connect to Wi-Fi,
+download this repo with `git clone`, and run its install script. The script
+erases the internal disk and installs this setup. These steps walk you
+through it.
+
+### 7.1 Start the NixOS installer
 
 1. Plug USB stick #2 into the Chromebook and the charger into the wall.
-2. Press Power. When the rabbit logo appears, press **Esc**.
+2. Press **Power**. When the rabbit logo appears, press **Esc**.
 3. Choose **Boot Menu**, then the USB stick. (If it isn't listed, go back,
    unplug and replug the stick, wait 3 seconds, and open the Boot Menu again.)
    Source: [MrChromebox: Booting Your OS](https://docs.mrchromebox.tech/docs/firmware/booting.html)
-4. Pick the first entry in the NixOS menu. After a minute you get a text prompt,
-   already logged in as the user `nixos`.
-5. **Connect to Wi-Fi.** Run `nmtui`, choose **Activate a connection**, pick
-   your network, and type the password. Choose **Back**, then **Quit**. Check
-   it works:
+4. The NixOS menu appears. The first entry, **NixOS 26.05… Installer**, starts
+   by itself after 10 seconds (or press **Enter**).
+
+   If the screen then stays black for more than 2 minutes, hold **Power** to
+   turn the laptop off and start again from step 2. This time, in the NixOS
+   menu choose **Options**, then **No modesetting**, then the installer entry.
+5. After a minute or two, text stops scrolling and you see a prompt like this:
+
+   ```
+   [nixos@nixos:~]$
+   ```
+
+   You are logged in as the user `nixos`; no password is needed. This is a
+   text screen: you type a command and press **Enter** to run it.
+
+   The text is small on this screen. To make it bigger, run:
+
+   ```
+   setfont ter-v32n
+   ```
+
+   Typing tips: commands are case-sensitive. **↑** brings back the previous
+   command, **Tab** completes file names, and **Ctrl+C** stops a command.
+
+### 7.2 Connect to Wi-Fi
+
+1. Run:
+
+   ```
+   nmtui
+   ```
+
+2. With the arrow keys, choose **Activate a connection** and press **Enter**.
+3. Choose your network and press **Enter**. Type the Wi-Fi password and press
+   **Enter**. A `*` appears next to the network once it is connected.
+4. Press **Esc** (or choose **Back**), then choose **Quit**.
+5. Check the connection:
 
    ```
    ping -c 3 nixos.org
    ```
 
-6. **Get this repo:**
+   Three lines with `bytes from` mean it works. `Name or service not known` or
+   `Network is unreachable` means it isn't connected yet: run `nmtui` again.
+
+   If your network isn't in the list, wait 10 seconds and choose **Activate a
+   connection** again. You can also connect without the menus (replace the
+   name; it asks for the password):
 
    ```
-   git clone https://github.com/derikatwork/blackbook
+   nmcli device wifi list
+   nmcli --ask device wifi connect "Your Network Name"
    ```
 
-7. **Find the internal disk.** It is an eMMC, usually `mmcblk0`, with no
-   `TRAN` value (or `mmc`) and `RM` = `0`. The USB stick shows `TRAN` = `usb`.
+### 7.3 Get this repo
 
-   ```
-   lsblk -o NAME,SIZE,MODEL,TRAN,RM
-   ```
+Download this repo (the configuration and the install script) into a folder
+called `blackbook`:
 
-   Ignore entries like `mmcblk0boot0`, `mmcblk0boot1`, and `mmcblk0rpmb`.
-   Those are small hidden areas of the same chip, not the disk.
+```
+git clone https://github.com/derikatwork/blackbook
+```
 
-8. **Install.** Replace `/dev/mmcblk0` if step 7 showed a different name:
+Check that it worked: `ls blackbook` should list `README.md`, `flake.nix`,
+`hosts`, `modules`, `scripts` and a few more. Whatever is on GitHub now is
+what gets installed, so changes you made there are included.
 
-   > ⚠️ This erases the disk you name, including ChromeOS. The script shows
-   > the disks, refuses USB and removable drives, and asks you to type the
-   > disk name again before it changes anything.
+### 7.4 Find the internal disk
 
-   ```
-   sudo bash blackbook/scripts/install.sh /dev/mmcblk0
-   ```
+```
+lsblk -o NAME,SIZE,MODEL,TRAN,RM
+```
 
-   The script explains each step as it goes:
+What the lines mean:
 
-   - It partitions and formats the disk, then copies this repo to
-     `/home/derik/nixos-config`.
-   - It checks that the repo lists every kernel module the hardware needs. If
-     something is missing, it **stops** and tells you exactly which line to add
-     to `blackbook/hosts/liara/hardware-configuration.nix`. Add it with
-     `nano` and run the same command again.
-   - It installs NixOS (about 2 GB of downloads).
-   - It asks you to **choose your password** (twice). You need it for `sudo`
-     and to unlock the screen.
+| Line | What it is |
+|---|---|
+| `mmcblk0` (about `29.1G` for 32 GB of storage, `58.2G` for 64 GB; `RM` = `0`) | **The internal disk. Install here.** |
+| `mmcblk0p1`, `mmcblk0p2`, … | ChromeOS's partitions on that disk (they will be erased) |
+| `mmcblk0boot0`, `mmcblk0boot1`, `mmcblk0rpmb` | Small hidden areas of the same chip. Ignore them. |
+| `sda` or `sdb` (`TRAN` = `usb`, `RM` = `1`) | The USB stick you started from. Never pick this. |
+| `loop0` | The installer's own files. Ignore it. |
 
-9. When it says **NixOS is installed**, type `reboot` and remove the USB stick
-   when the screen goes dark.
+So the disk name is `/dev/mmcblk0` (unless your list shows a different
+`mmcblk…` name).
+
+### 7.5 Run the install script
+
+> ⚠️ This erases the disk you name, including ChromeOS and everything on it.
+> The script checks first: it shows the disks, refuses USB and removable
+> drives, and asks you to type the disk name again before it changes
+> anything.
+
+Run this (replace `/dev/mmcblk0` if 7.4 showed a different name):
+
+```
+sudo bash blackbook/scripts/install.sh /dev/mmcblk0
+```
+
+What happens, step by step (the script prints each step as `==> 1/10 …`):
+
+1. **Safety checks.** It checks that it runs from the installer, in UEFI mode,
+   with internet, and shows the disks again.
+2. **Confirm.** It shows a red **WARNING** and asks you to type the full disk
+   name. Type `/dev/mmcblk0` and press **Enter**. Anything else stops the
+   script without changing anything.
+3. **Steps 1/10 to 5/10:** it partitions and formats the disk, creates the
+   btrfs subvolumes, mounts them, and copies this repo to
+   `/home/derik/nixos-config`. This takes a few seconds.
+4. **Step 6/10:** it checks that the repo lists every kernel module this
+   laptop's hardware needs. If something is missing, it **stops** and tells
+   you exactly what to add to `blackbook/hosts/liara/hardware-configuration.nix`
+   (open it with `nano`, add the lines, save with **Ctrl+O** and **Enter**,
+   exit with **Ctrl+X**). Then run the same command again; it starts over.
+5. **Step 7/10:** it installs NixOS. This downloads about 2 GB and usually
+   takes 20 to 60 minutes. Lots of `copying path …` lines are normal. Keep the
+   charger plugged in and the lid open.
+6. **Step 8/10:** it asks you to **choose your password**: type it at
+   `New password:`, press **Enter**, and type it again. Nothing shows while you
+   type; that's normal. You need this password for `sudo` and to unlock the
+   screen.
+7. **Steps 9/10 and 10/10:** final checks, then it prints **NixOS is installed**
+   and the next steps.
+
+### 7.6 Restart into NixOS
+
+1. Type `reboot` and press **Enter**.
+2. Remove the USB stick when the screen goes dark.
+3. Continue with [section 8](#8-first-boot).
+
+### If something goes wrong
+
+- **The script stops with `ERROR:`** Read the message: it says what is wrong
+  and what to do. If you hadn't typed the disk name yet, nothing was changed.
+  After fixing the cause, run the same command again.
+- **The download in step 7/10 fails** (for example, Wi-Fi dropped). Check the
+  connection with `ping -c 3 nixos.org`, then run the same command again. It
+  starts over from the beginning, which is fine: the disk is erased anyway.
+- **`git clone` says `Could not resolve host`.** Wi-Fi isn't connected; go back
+  to 7.2.
+- **No Wi-Fi networks at all.** See [No Wi-Fi](docs/troubleshooting.md#no-wi-fi).
+- **Starting over.** You can restart the laptop at any point and begin again
+  at 7.1. Until the script prints **NixOS is installed**, the internal disk
+  has no working system on it, so always start from the USB stick.
 
 ## 8. First boot
 
