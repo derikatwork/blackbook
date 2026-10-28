@@ -22,14 +22,5 @@
           { local.configSource = self.outPath; }
         ];
       };
-
-      # The live USB with the same desktop and an install launcher
-      # (hosts/live/configuration.nix). Build the ISO with:
-      #   nix build .#live-iso
-      # (GitHub builds it for you: .github/workflows/live-iso.yml.)
-      nixosConfigurations.liara-live = nixpkgs.lib.nixosSystem {
-        modules = [ ./hosts/live/configuration.nix ];
-      };
-      packages.x86_64-linux.live-iso = self.nixosConfigurations.liara-live.config.system.build.isoImage;
     };
 }
