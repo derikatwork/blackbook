@@ -16,7 +16,29 @@ let
       )
     );
   startMako = helper "start-mako";
-  helpers = [ startMako ] ++ map helper [ "lock-screen" "power-menu" "screenshot" ];
+  helpers = [ startMako ] ++ map helper [ "lock-screen" "power-menu" "screenshot" "settings-menu" "conky-info" ];
+
+  # GTK 3 has Adwaita, its dark version and High Contrast built in, but theme
+  # pickers such as nwg-look only list themes that have a folder in
+  # share/themes. These are the same tiny files the gnome-themes-extra package
+  # installs for GTK 3, without its large GTK 2 parts.
+  gtk3ThemeNames = pkgs.runCommandLocal "gtk3-theme-names" { } ''
+    mkdir -p $out/share/themes/{Adwaita,Adwaita-dark,HighContrast}/gtk-3.0
+    echo '/* Built into GTK 3 */' > $out/share/themes/Adwaita/gtk-3.0/gtk.css
+    echo '/* Built into GTK 3 */' > $out/share/themes/HighContrast/gtk-3.0/gtk.css
+    echo '@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained-dark.css");' \
+      > $out/share/themes/Adwaita-dark/gtk-3.0/gtk.css
+  '';
+
+  # "Settings" in the app launcher; opens the settings menu (files/bin/settings-menu).
+  settingsEntry = pkgs.makeDesktopItem {
+    name = "settings";
+    desktopName = "Settings";
+    comment = "Wi-Fi, Bluetooth, sound, display, appearance and keyboard shortcuts";
+    icon = "preferences-system-symbolic";
+    exec = "settings-menu";
+    categories = [ "Settings" ];
+  };
 
   # If a program sends a notification before the autostart has started
   # mako, D-Bus starts the notification daemon on demand. mako's own D-Bus
@@ -142,6 +164,9 @@ in
 
   programs.thunderbird.enable = true;
 
+  # PDF reader (GNOME's Evince), and the app that opens PDF files.
+  xdg.mime.defaultApplications."application/pdf" = "org.gnome.Evince.desktop";
+
   # File manager with USB drives (udisks2), trash and network places
   # (gvfs), and right-click "Extract here" (xarchiver, a GTK app, no Qt).
   programs.thunar = {
@@ -165,6 +190,14 @@ in
       swaylock
       wlopm # turns the screen off and on
       adwaita-icon-theme # icons and the Adwaita cursor
+      conky # the info panel on the desktop (files/conky/conky.conf)
+
+      # Settings apps, opened from the settings menu
+      nwg-look # appearance: GTK theme, dark mode, fonts, icons, cursor
+      wdisplays # screen resolution, scale and arrangement
+
+      # Apps
+      evince # PDF reader
 
       # Utilities
       xarchiver
@@ -176,7 +209,8 @@ in
       xdg-utils # xdg-open
       xdg-user-dirs
     ])
-    ++ helpers;
+    ++ helpers
+    ++ [ settingsEntry gtk3ThemeNames ];
 
   services.dbus.packages = [ makoDbusService ];
 
@@ -198,6 +232,8 @@ in
     "xdg/swaylock/config".source = ../files/swaylock/config;
     "xdg/gtk-3.0/settings.ini".source = ../files/gtk-3.0/settings.ini;
     "xdg/gtk-4.0/settings.ini".source = ../files/gtk-4.0/settings.ini;
+    # conky's own system-wide config path (it does not use /etc/xdg).
+    "conky/conky.conf".source = ../files/conky/conky.conf;
 
     # xdg-user-dirs-update (run at login) creates only these folders in your
     # home folder; the other standard folders just point to ~.

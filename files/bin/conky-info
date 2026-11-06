@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Short status lines for the info panel (files/conky/conky.conf):
+#   conky-info battery   for example "85% (charging)"
+#   conky-info network   the Wi-Fi network (or wired connection) in use
+#   conky-info update    whether an automatic update waits for a restart
+
+case "${1:-}" in
+  battery)
+    for supply in /sys/class/power_supply/*; do
+      [ "$(cat "$supply/type" 2>/dev/null)" = Battery ] || continue
+      capacity=$(cat "$supply/capacity" 2>/dev/null) || continue
+      case "$(cat "$supply/status" 2>/dev/null)" in
+        Charging) echo "$capacity% (charging)" ;;
+        Full) echo "$capacity% (full)" ;;
+        *) echo "$capacity%" ;;
+      esac
+      exit 0
+    done
+    echo "No battery found"
+    ;;
+  network)
+    name=$(nmcli -t -f TYPE,NAME connection show --active 2>/dev/null |
+      grep -E '^(802-11-wireless|802-3-ethernet):' | head -n 1 | cut -d: -f2-)
+    echo "${name:-Not connected}"
+    ;;
+  update)
+    if [ "$(readlink -f /nix/var/nix/profiles/system)" = "$(readlink -f /run/current-system)" ]; then
+      echo "None waiting"
+    else
+      echo "Restart to finish"
+    fi
+    ;;
+  *)
+    echo "usage: conky-info battery|network|update" >&2
+    exit 1
+    ;;
+esac

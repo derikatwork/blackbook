@@ -17,6 +17,9 @@ swaybg --color '#3b5b74' &
 # The panel at the bottom of the screen.
 waybar &
 
+# The info panel at the top right of the desktop (/etc/conky/conky.conf).
+conky &
+
 # Tray icons for Wi-Fi and Bluetooth.
 nm-applet --indicator &
 blueman-applet &
