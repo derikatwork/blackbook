@@ -16,6 +16,7 @@
     "backlight",
     "battery",
     "clock",
+    "custom/settings",
     "custom/power"
   ],
 
@@ -97,6 +98,13 @@
     "calendar": {
       "mode": "month"
     }
+  },
+
+  // Wi-Fi, Bluetooth, Sound, Display, Appearance, Keyboard shortcuts.
+  "custom/settings": {
+    "format": "⚙",
+    "tooltip": false,
+    "on-click": "settings-menu"
   },
 
   // Lock, Suspend, Log out, Reboot, Shut down.

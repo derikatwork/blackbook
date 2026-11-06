@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Settings menu for the panel's ⚙ button, the "Settings" entry in the app
+# launcher, and the right-click desktop menu. Each entry opens the app that
+# changes that setting. These only change your own settings; settings for
+# the whole system are in ~/nixos-config (README, "Changing the config").
+
+choice=$(printf '%s\n' \
+  "Wi-Fi and network" \
+  "Bluetooth" \
+  "Sound" \
+  "Display" \
+  "Appearance: theme, fonts, cursor" \
+  "Keyboard shortcuts" |
+  fuzzel --dmenu --prompt "Settings: " --lines 6 --width 34) || exit 0
+
+case "$choice" in
+  "Wi-Fi and network") exec nm-connection-editor ;;
+  "Bluetooth") exec blueman-manager ;;
+  "Sound") exec pavucontrol ;;
+  "Display") exec wdisplays ;;
+  "Appearance: theme, fonts, cursor") exec nwg-look ;;
+  "Keyboard shortcuts")
+    # Only a list to read; Enter or Esc closes it. A monospace font keeps
+    # the two columns lined up. Keep it in step with files/labwc/rc.xml,
+    # files/keyd/chromebook.conf and README section 9.
+    printf '%s\n' \
+      "Search (tap)              App launcher" \
+      "Search+Space, Overview    App launcher" \
+      "Search+Enter, Ctrl+Alt+T  Terminal" \
+      "Search+B                  Firefox" \
+      "Search+M                  Thunderbird" \
+      "Search+E                  Files" \
+      "Search+L                  Lock the screen" \
+      "Search+Q, Alt+Fullscreen  Close the window" \
+      "Alt+Tab, Alt+Shift+Tab    Switch windows" \
+      "Alt+[, Alt+]              Snap left / right half" \
+      "Alt+=                     Maximize / restore" \
+      "Fullscreen key            Full screen on / off" \
+      "Back, Forward, Refresh    Back, forward, reload" \
+      "Search+top-row key        F1 to F10" \
+      "Search+Backspace          Delete" \
+      "Search+Left / Right       Home / End" \
+      "Search+Up / Down          Page Up / Page Down" \
+      "Search+Shift+S            Screenshot of an area" \
+      "Ctrl+Overview             Screenshot of the screen" \
+      "Power key                 Sleep" \
+      "Ctrl+Alt+Forward          Text console (Ctrl+Alt+Back returns)" |
+      fuzzel --dmenu --prompt "Shortcuts: " --lines 21 --width 64 \
+        --font "Noto Sans Mono:size=14" >/dev/null
+    ;;
+esac

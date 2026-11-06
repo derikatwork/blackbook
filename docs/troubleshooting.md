@@ -307,5 +307,22 @@ What the messages mean:
   Then press **Ctrl+Alt+Back** and unlock as usual. If that doesn't help,
   `sudo systemctl restart greetd` ends the desktop session (unsaved work is
   lost) and starts a fresh one.
+- **The info panel at the top right is missing:** open a terminal and run
+  `conky` to see its error message. If you made your own
+  `~/.config/conky/conky.conf`, the error is probably in it; delete it to go
+  back to the original.
+- **A PDF opens in another app:** right-click it in Files, choose
+  **Open With Other Application**, pick **Document Viewer**, and tick the box
+  to always use it.
+- **The desktop has lost all its keyboard shortcuts** after you tried a labwc
+  settings app (such as labwc-tweaks): those apps create
+  `~/.config/labwc/rc.xml`, which replaces this setup's shortcuts. Delete it
+  and reload labwc:
+
+  ```
+  rm ~/.config/labwc/rc.xml
+  labwc --reconfigure
+  ```
+
 - **"Out of memory" notification:** earlyoom closed the biggest program to
   keep the laptop responsive. Close some Firefox tabs.

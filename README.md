@@ -11,8 +11,11 @@ change it by editing text files.
 
 - Auto-login straight into a light desktop ([labwc](https://labwc.github.io/))
   with a ChromeOS-style panel at the bottom
-- Firefox (with uBlock Origin), Thunderbird, a file manager (Thunar), and a
-  terminal (foot)
+- Firefox (with uBlock Origin), Thunderbird, a file manager (Thunar), a PDF
+  reader (Evince), and a terminal (foot)
+- A **Settings** menu (⚙ in the panel) for Wi-Fi, Bluetooth, sound, display and
+  appearance, and an info panel on the desktop with the time, battery, memory
+  and the main keyboard shortcuts
 - Wi-Fi, Bluetooth, sound, brightness, and suspend on lid close
 - Chromebook keyboard keys that work like they do on ChromeOS
 - [Tailscale](https://tailscale.com) for reaching the laptop from your other devices
@@ -441,17 +444,65 @@ key.
 Screenshots are saved in `~/Pictures/Screenshots` and copied to the clipboard.
 
 **Right-click the desktop background** for a menu with Terminal, Firefox,
-Thunderbird, Files, Wi-Fi, Bluetooth, Sound, Lock, Log out, Reboot, and Shut
-down. The **⏻** button at the bottom right does Lock, Suspend, Log out, Reboot,
-and Shut down. Closing the lid suspends; opening it shows the lock screen.
+Thunderbird, Files, Wi-Fi, Bluetooth, Sound, Settings, Lock, Log out, Reboot,
+and Shut down. The **⏻** button at the bottom right does Lock, Suspend, Log out,
+Reboot, and Shut down. Closing the lid suspends; opening it shows the lock
+screen.
 
 ### The panel
 
 From left to right: **◉** opens the launcher, then your open windows (click to
 switch, middle-click to close). On the right: tray icons (Wi-Fi, Bluetooth),
 Bluetooth status, network, volume (scroll to change, click for sound
-settings), brightness (scroll to change), battery, and the clock (hover for a
-calendar).
+settings), brightness (scroll to change), battery, the clock (hover for a
+calendar), **⚙** for the settings menu, and **⏻** for the power menu.
+
+### Settings
+
+Click **⚙** in the panel (or type `settings` in the launcher, or right-click
+the desktop → **Settings**) and pick what to change:
+
+| Entry | Opens | What you can change |
+|---|---|---|
+| Wi-Fi and network | Network Connections | Saved Wi-Fi networks, VPNs, wired settings |
+| Bluetooth | Bluetooth Manager | Pair, connect and remove devices |
+| Sound | Volume Control | Speakers or headphones, microphone, volume per app |
+| Display | wdisplays | Resolution, scale, and arranging an external screen |
+| Appearance: theme, fonts, cursor | nwg-look | Light or dark theme (**Adwaita-dark**), icons, cursor, font and text size |
+| Keyboard shortcuts | A list | All shortcuts, to read (Esc closes it) |
+
+These change only your own settings, and they are kept, except that changes
+in **wdisplays** last only until you log out. A new theme may only show in
+apps you open after changing it. To use a bigger scale for good, see
+[Display size](#display-size). Settings for the whole system (time zone, apps,
+the keyboard map, touchpad behavior) are in this repo instead: see
+[Changing the config](#changing-the-config-sysupdate).
+
+### The info panel
+
+The box at the top right of the desktop shows the time and date, the battery,
+how busy the processor (CPU) is, memory and disk space, the Wi-Fi network,
+whether an update is waiting for a restart, and the main keyboard shortcuts.
+It sits under your windows, so you see it on an empty part of the desktop.
+
+It is [Conky](https://github.com/brndnmtthws/conky). To change what it shows,
+copy its settings and edit your copy:
+
+```
+mkdir -p ~/.config/conky
+cp /etc/conky/conky.conf ~/.config/conky/conky.conf
+nano ~/.config/conky/conky.conf
+```
+
+Then log out and back in. After that, it updates as soon as you save the file.
+To get the original back, delete `~/.config/conky/conky.conf`. `man conky`
+lists everything it can show.
+
+### PDF files
+
+PDF files open in **Evince** (Document Viewer): double-click one in Files, or
+open it from Firefox's downloads. It can search, zoom, print, and fill in PDF
+forms.
 
 ### Wi-Fi and Bluetooth
 
@@ -682,7 +733,7 @@ modules/
   desktop.nix                 labwc, login, look, fonts, apps, config files
   updates.nix                 Automatic updates
 files/                        Config files for labwc, Waybar, fuzzel, foot, mako,
-                              swaylock, nano, keyd, GTK, and small helper scripts
+                              swaylock, Conky, nano, keyd, GTK, and small helper scripts
 scripts/install.sh            Run from the NixOS installer (section 7)
 docs/                         Post-install checklist and troubleshooting
 ```
